@@ -128,6 +128,28 @@
   .streak { display: flex; align-items: center; gap: 8px; color: var(--accent); }
   .streak b { font-family: var(--display); font-size: 2rem; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
   .streak span { font-size: .8rem; color: var(--muted); line-height: 1.15; }
+  .hero { text-align: center; display: grid; justify-items: center; gap: 2px; padding: 20px 16px 16px; --fl: var(--muted); }
+  .hero.t1 { --fl: #E8821E; }
+  .hero.t2 { --fl: #F2A900; }
+  .hero .flame { color: var(--fl); line-height: 0; }
+  .hero.t0 .flame { opacity: .45; }
+  .hero .num { font-family: var(--display); font-weight: 800; font-size: 4.6rem; line-height: .95; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .hero .lbl { font-family: var(--display); font-weight: 700; font-size: 1.25rem; }
+  .hero .rec { color: var(--muted); font-size: .9rem; margin-bottom: 10px; }
+  .hero .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; width: 100%; max-width: 340px; margin: 4px 0 8px; }
+  .wd { display: grid; justify-items: center; gap: 4px; }
+  .wd i { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--line); color: var(--muted); }
+  .wd i svg { width: 18px; height: 18px; }
+  .wd span { font-size: .75rem; color: var(--muted); }
+  .wd.ok i { background: #E8821E; border-color: #E8821E; color: #3A2000; }
+  .hero.t2 .wd.ok i { background: #F2A900; border-color: #F2A900; }
+  .wd.frei i { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .wd.now i { border: 2px dashed #E8821E; }
+  .wd.miss i { opacity: .5; }
+  .wd.future i { border-style: dotted; opacity: .6; }
+  .wd.today span { color: var(--ink); font-weight: 700; }
+  @media (prefers-reduced-motion: no-preference) { .hero.t1 .flame svg, .hero.t2 .flame svg { animation: flick 2.4s ease-in-out infinite; transform-origin: 50% 90%; } }
+  @keyframes flick { 0%, 100% { transform: scale(1) rotate(0); } 40% { transform: scale(1.06) rotate(-2deg); } 70% { transform: scale(.98) rotate(1.5deg); } }
   .goal { display: grid; gap: 6px; min-width: 0; }
   .goal p { font-size: .9rem; }
 
@@ -454,7 +476,7 @@
   function weekKey(d) { var m = new Date(d.getTime()); m.setDate(m.getDate() - ((m.getDay() + 6) % 7)); return dayKey(m); }
   function streakInfo(id) {
     var P = prog(id), keys = Object.keys(P.days || {}).filter(function (k) { return /^\d{4}-\d\d-\d\d$/.test(k); }).sort();
-    var out = { cur: 0, best: 0, freezeUsed: false };
+    var out = { cur: 0, best: 0, freezeUsed: false, bridged: {} };
     if (!keys.length) return out;
     var p = keys[0].split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]), end = new Date(); end.setHours(0, 0, 0, 0);
     var todayKey = dayKey(end), used = {}, prevBridged = false, cur = 0, best = 0;
@@ -462,7 +484,7 @@
       var k = dayKey(d), met = (P.days[k] || 0) >= GOAL;
       if (met) { cur++; prevBridged = false; }
       else if (k === todayKey) { /* heute noch offen, kein Verlust */ }
-      else if (cur > 0 && !prevBridged && !used[weekKey(d)]) { used[weekKey(d)] = true; prevBridged = true; }
+      else if (cur > 0 && !prevBridged && !used[weekKey(d)]) { used[weekKey(d)] = true; out.bridged[k] = true; prevBridged = true; }
       else { cur = 0; prevBridged = false; }
       if (cur > best) best = cur;
     }
@@ -470,6 +492,22 @@
     return out;
   }
   function streak(id) { return streakInfo(id).cur; }
+  var WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  function weekDays(id, info) {
+    var P = prog(id), t = new Date(); t.setHours(0, 0, 0, 0);
+    var d = new Date(t.getTime()); d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    var out = [];
+    for (var i = 0; i < 7; i++, d.setDate(d.getDate() + 1)) {
+      var k = dayKey(d), met = (P.days[k] || 0) >= GOAL, st;
+      if (d > t) st = 'future';
+      else if (met) st = 'ok';
+      else if (info.bridged[k]) st = 'frei';
+      else if (d.getTime() === t.getTime()) st = 'now';
+      else st = 'miss';
+      out.push({ l: WD[i], s: st, today: d.getTime() === t.getTime() });
+    }
+    return out;
+  }
 
   function buildQueue(force) {
     var P = prog(), now = Date.now(), words = selectedWords(), due = [], fresh = [], rnd = {};
@@ -558,6 +596,24 @@
       '<div class="actions"><button class="btn link" data-a="parents">Für Eltern</button></div>';
   }
 
+  function heroHtml(si) {
+    var st = si.cur, tier = st >= 7 ? 't2' : st >= 1 ? 't1' : 't0';
+    var big = ICON.flame.replace('width="34" height="34"', 'width="76" height="76"');
+    var days = weekDays(null, si).map(function (d) {
+      var inner = d.s === 'ok' ? ICON.check : d.s === 'frei' ? '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 6v12M16 6v12" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>' : '';
+      var lab = d.s === 'ok' ? 'geübt' : d.s === 'frei' ? 'Schonfrist genutzt' : d.s === 'now' ? 'heute offen' : d.s === 'future' ? 'kommt noch' : 'nicht geübt';
+      return '<div class="wd ' + d.s + (d.today ? ' today' : '') + '" role="img" aria-label="' + d.l + ': ' + lab + '"><i>' + inner + '</i><span>' + d.l + '</span></div>';
+    }).join('');
+    var msg = si.freezeUsed ? 'Schonfrist diese Woche: <b>verbraucht</b>' : 'Schonfrist diese Woche: <b>noch frei</b>';
+    return '<section class="card hero ' + tier + '" aria-label="Serie">' +
+      '<div class="flame" aria-hidden="true">' + big + '</div>' +
+      '<div class="num" aria-live="polite">' + st + '</div>' +
+      '<div class="lbl">' + (st === 1 ? 'Tag' : 'Tage') + ' in Folge</div>' +
+      '<div class="rec">Rekord: <b>' + si.best + '</b></div>' +
+      '<div class="week">' + days + '</div>' +
+      '<p class="muted small">' + msg + '. Ein verpasster Tag pro Woche kostet dich nichts.</p></section>';
+  }
+
   function vHome() {
     var p = profile(), P = prog(), today = P.days[dayKey(new Date())] || 0, si = streakInfo(), st = si.cur;
     var n = buildQueue(false).length, chs = chapters(), nSel = selectedWords().length;
@@ -585,9 +641,8 @@
     var pct = Math.min(100, Math.round(today / GOAL * 100));
     return '<div class="top"><h1 style="font-size:1.9rem">Hallo, ' + esc(p.name) + '!</h1>' +
       '<button class="btn link" data-a="home-out">Wechseln</button></div>' +
-      '<div class="card stats"><div class="streak">' + ICON.flame + '<div><b>' + st + '</b><br><span>' + (st === 1 ? 'Tag' : 'Tage') + ' in Folge</span><br><span>Rekord: ' + si.best + '</span></div></div>' +
-      '<div class="goal"><p>Heute: <b>' + Math.min(today, GOAL) + ' von ' + GOAL + '</b> Wörtern</p><div class="meter"><span style="width:' + pct + '%"></span></div></div></div>' +
-      '<p class="muted small">Schonfrist: Ein verpasster Tag pro Woche kostet deine Serie nichts. Diese Woche: <b>' + (si.freezeUsed ? 'verbraucht' : 'noch frei') + '</b>.</p>' +
+      heroHtml(si) +
+      '<div class="card stats"><div class="goal"><p>Heute: <b>' + Math.min(today, GOAL) + ' von ' + GOAL + '</b> Wörtern</p><div class="meter"><span style="width:' + pct + '%"></span></div></div></div>' +
       chapSec + todo +
       '<div class="modes">' +
       '<button class="mode" data-a="start" data-m="cards"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.cards + '</span><span><strong>Karteikarten</strong><span class="d">Umdrehen und selbst prüfen</span></span></button>' +
