@@ -187,7 +187,10 @@
   .li .tag { font-size: .65rem; }
   .li .del { min-width: 44px; min-height: 44px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); display: grid; place-items: center; }
   .switch { display: flex; align-items: center; gap: 12px; min-height: 48px; }
-  .switch input { width: 24px; height: 24px; accent-color: var(--accent); }
+  .switch input { width: 24px; height: 24px; accent-color: var(--accent); flex: none; }
+  .chaps { display: grid; gap: 2px; margin: 6px 0 4px; }
+  .chap { min-height: 52px; font-weight: 600; }
+  .mode[disabled] { opacity: .45; }
   .ok-msg { color: var(--good); font-weight: 500; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -202,7 +205,7 @@
 (function () {
   'use strict';
 
-  var SESSION_SIZE = 10, GOAL = 10;
+  var SESSION_SIZE = 10, GOAL = 10, TEST_SIZE = 10;
   var INTERVALS = [0, 0, 1, 3, 7, 14];
   var BOX_INFO = ['noch nie', 'heute', 'in 1 Tag', 'in 3 Tagen', 'in 7 Tagen', 'in 14 Tagen'];
   var KEY = 'vokabelkasten-v1';
@@ -294,7 +297,7 @@
     return {
       profiles: [{ id: 'a', name: 'Julia' }, { id: 'b', name: 'Isabel' }],
       prog: { a: { cards: {}, days: {} }, b: { cards: {}, days: {} } },
-      settings: { ipa: false },
+      settings: { ipa: false, off: [] },
       custom: []
     };
   }
@@ -425,6 +428,23 @@
     return prev[n];
   }
   function allWords() { return BASE.concat(DB.custom); }
+  /* Kapitel: Reihenfolge wie im Buch; eigene Wörter zuletzt */
+  var CHAP_NAMES = { 'Unit 1 · Hello!': 'Hello!', 'Zahlen 0–12': 'Zahlen 0–12', 'Farben': 'Farben', 'The friends in Greenwich': 'The friends in Greenwich' };
+  function chapters() {
+    var out = [], seen = {};
+    allWords().forEach(function (w) {
+      if (seen[w.lesson]) { seen[w.lesson].n++; return; }
+      var c = { key: w.lesson, n: 1 }; seen[w.lesson] = c; out.push(c);
+    });
+    var k = 0;
+    out.forEach(function (c) {
+      if (c.key === 'Eigene Wörter') c.label = 'Eigene Wörter';
+      else { k++; c.label = 'Kapitel ' + k + ' · ' + (CHAP_NAMES[c.key] || c.key); }
+    });
+    return out;
+  }
+  function chapOn(key) { return (DB.settings.off || []).indexOf(key) < 0; }
+  function selectedWords() { return allWords().filter(function (w) { return chapOn(w.lesson); }); }
   function profile() { return DB.profiles.find(function (p) { return p.id === pid; }); }
   function prog(id) { return DB.prog[id || pid]; }
   function kindLabel(w) { return w.kind === 'p' ? 'Wendung' : 'Wort'; }
@@ -437,7 +457,7 @@
   }
 
   function buildQueue(force) {
-    var P = prog(), now = Date.now(), words = allWords(), due = [], fresh = [], rnd = {};
+    var P = prog(), now = Date.now(), words = selectedWords(), due = [], fresh = [], rnd = {};
     words.forEach(function (w) {
       rnd[w.id] = Math.random();
       var c = P.cards[w.id];
@@ -525,15 +545,26 @@
 
   function vHome() {
     var p = profile(), P = prog(), today = P.days[dayKey(new Date())] || 0, st = streak();
-    var n = buildQueue(false).length;
+    var n = buildQueue(false).length, chs = chapters(), nSel = selectedWords().length;
+    var chapHtml = chs.map(function (c, i) {
+      var due = 0;
+      allWords().forEach(function (w) { if (w.lesson === c.key) { var cc = P.cards[w.id]; if (!cc || cc.due <= Date.now()) due++; } });
+      return '<label class="switch chap"><input type="checkbox" data-chap="' + i + '"' + (chapOn(c.key) ? ' checked' : '') + '><span>' + esc(c.label) +
+        '<span class="muted small"> · ' + c.n + ' Wörter' + (due ? ', ' + due + ' offen' : '') + '</span></span></label>';
+    }).join('');
+    var allOn = chs.every(function (c) { return chapOn(c.key); });
+    var chapSec = '<section class="card"><h3 style="font-size:1.15rem">Was üben?</h3><div class="chaps">' + chapHtml + '</div>' +
+      '<button class="btn link" data-a="chap-all">' + (allOn ? 'Alle abwählen' : 'Alle auswählen') + '</button></section>';
     var counts = [0, 0, 0, 0, 0, 0];
-    allWords().forEach(function (w) { var c = P.cards[w.id]; counts[c ? c.box : 0]++; });
+    allWords().forEach(function (w) { var c = P.cards[w.id]; counts[c ? c.box : 0]++; });  /* Kasten zählt über alle Kapitel */
     var trays = counts.map(function (c, i) {
       var h = 36 + Math.min(c, 14) * 7;
       return '<div class="tray' + (i === 0 ? ' new' : '') + '"><div class="well" style="height:' + h + 'px">' + c + '</div>' +
         '<span class="tl">' + (i === 0 ? 'Neu' : 'Fach ' + i) + '</span><span class="ti">' + BOX_INFO[i] + '</span></div>';
     }).join('');
-    var todo = n > 0
+    var todo = nSel === 0
+      ? '<p class="note">Bitte wähle oben mindestens ein Kapitel aus.</p>'
+      : n > 0
       ? '<p><b>' + n + (n === 1 ? ' Wort wartet' : ' Wörter warten') + '</b> heute auf dich.</p>'
       : '<p class="note">Für heute ist alles geschafft. Du kannst trotzdem üben, das zählt dann aber nicht für die Serie.</p>';
     var pct = Math.min(100, Math.round(today / GOAL * 100));
@@ -541,17 +572,19 @@
       '<button class="btn link" data-a="home-out">Wechseln</button></div>' +
       '<div class="card stats"><div class="streak">' + ICON.flame + '<div><b>' + st + '</b><br><span>' + (st === 1 ? 'Tag' : 'Tage') + ' in Folge</span></div></div>' +
       '<div class="goal"><p>Heute: <b>' + Math.min(today, GOAL) + ' von ' + GOAL + '</b> Wörtern</p><div class="meter"><span style="width:' + pct + '%"></span></div></div></div>' +
-      todo +
+      chapSec + todo +
       '<div class="modes">' +
-      '<button class="mode" data-a="start" data-m="cards"><span class="ic">' + ICON.cards + '</span><span><strong>Karteikarten</strong><span class="d">Umdrehen und selbst prüfen</span></span></button>' +
-      '<button class="mode" data-a="start" data-m="type"><span class="ic">' + ICON.keys + '</span><span><strong>Tippen</strong><span class="d">Deutsch lesen, Englisch schreiben</span></span></button>' +
-      '<button class="mode" data-a="start" data-m="listen"><span class="ic">' + ICON.speaker(26) + '</span><span><strong>Hören</strong><span class="d">Anhören und die Bedeutung wählen</span></span></button>' +
+      '<button class="mode" data-a="start" data-m="cards"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.cards + '</span><span><strong>Karteikarten</strong><span class="d">Umdrehen und selbst prüfen</span></span></button>' +
+      '<button class="mode" data-a="start" data-m="type"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.keys + '</span><span><strong>Tippen</strong><span class="d">Deutsch lesen, Englisch schreiben</span></span></button>' +
+      '<button class="mode" data-a="start" data-m="listen"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.speaker(26) + '</span><span><strong>Hören</strong><span class="d">Anhören und die Bedeutung wählen</span></span></button>' +
+      '<button class="mode" data-a="start-test"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.check + '</span><span><strong>Mini-Test</strong><span class="d">' + Math.min(TEST_SIZE, nSel) + ' Fragen gemischt, ohne Hilfen</span></span></button>' +
       '</div>' +
       '<section class="card"><h3 style="font-size:1.15rem">Dein Kasten</h3><div class="trays">' + trays + '</div>' +
       '<p class="muted small">Ein richtiges Wort rutscht ein Fach weiter und kommt später wieder. Ein falsches fällt zurück in Fach 1.</p></section>';
   }
 
-  function ipaHtml(w) { return (DB.settings.ipa && w.ipa) ? '<div class="ipa">[' + esc(w.ipa) + ']</div>' : ''; }
+  function ipaHtml(w) { return (DB.settings.ipa && w.ipa && !(session && session.test)) ? '<div class="ipa">[' + esc(w.ipa) + ']</div>' : ''; }
+  function curMode(s) { return s.test ? s.q[s.i].sub : s.mode; }
   function speakBtn(label) { return '<button class="speak" data-a="speak">' + ICON.speaker(22) + '<span>' + label + '</span></button>'; }
 
   function vSession() {
@@ -559,10 +592,10 @@
     var head = '<div class="shead"><button class="icon-btn" data-a="quit" aria-label="Beenden">' + ICON.back + '</button>' +
       '<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><span style="width:' + pct + '%"></span></div>' +
       '<span class="count">' + (s.i + 1) + '/' + s.q.length + '</span></div>' +
-      (s.practice ? '<p class="note">Übungsrunde · zählt nicht für die Serie</p>' : '');
-    var body = '';
+      (s.test ? '<p class="note">Mini-Test · ohne Hilfen, zählt nicht für den Fortschritt</p>' : s.practice ? '<p class="note">Übungsrunde · zählt nicht für die Serie</p>' : '');
+    var body = '', mode = curMode(s);
 
-    if (s.mode === 'cards') {
+    if (mode === 'cards') {
       if (s.phase === 'front') {
         body = '<div class="stage"><section class="card"><span class="tag">' + kindLabel(w) + '</span>' +
           '<div class="big' + (w.en.length > 20 ? ' long' : '') + '">' + esc(w.en) + '</div>' + ipaHtml(w) + speakBtn('Anhören') + '</section>' +
@@ -575,7 +608,7 @@
           (w.ex ? '<div class="ex"><b>Beispiel</b>' + esc(w.ex) + '</div>' : '') + speakBtn('Anhören') + '</section></div>' +
           '<div class="actions two"><button class="btn warm" data-a="again">Nochmal</button><button class="btn good" data-a="know">Gewusst</button></div>';
       }
-    } else if (s.mode === 'type') {
+    } else if (mode === 'type') {
       var res = s.res;
       var prompt = '<section class="card"><span class="tag">' + kindLabel(w) + '</span><p class="label">Wie heißt das auf Englisch?</p>' +
         '<div class="big' + (w.de.length > 20 ? ' long' : '') + '">' + esc(w.de) + '</div></section>';
@@ -586,7 +619,7 @@
       } else {
         var fb;
         if (res.ok) fb = '<div class="fb good" role="status"><strong>' + ICON.check + 'Richtig!</strong><span class="ans">' + esc(w.en) + '</span></div>';
-        else fb = '<div class="fb bad" role="status"><strong>' + ICON.cross + (res.near ? 'Fast! Schau noch einmal genau hin.' : 'Das war es noch nicht.') + '</strong>' +
+        else fb = '<div class="fb bad" role="status"><strong>' + ICON.cross + (res.near && !s.test ? 'Fast! Schau noch einmal genau hin.' : 'Das war es noch nicht.') + '</strong>' +
           '<span class="muted small">Du hast geschrieben: ' + esc(res.given) + '</span><span class="ans">Richtig ist: ' + esc(w.en) + '</span></div>';
         body = '<div class="stage">' + prompt + fb + ipaHtml(w) + speakBtn('Anhören') + '</div>' +
           '<div class="actions"><button class="btn primary" data-a="next">Weiter</button></div>';
@@ -611,7 +644,21 @@
     return head + body;
   }
 
+  function vTestResult() {
+    var s = session, ratio = s.total ? s.right / s.total : 0;
+    var txt = ratio >= 0.9 ? 'Sehr stark!' : ratio >= 0.7 ? 'Gut gemacht!' : ratio >= 0.5 ? 'Schon ordentlich, da geht mehr.' : 'Noch etwas üben, dann klappt es.';
+    var wrong = s.wrong.length
+      ? '<section class="card"><h3 style="font-size:1.15rem">Das üben wir noch</h3><div class="list">' + s.wrong.map(function (w) {
+          return '<div class="li"><div><b>' + esc(w.en) + '</b><div class="de">' + esc(w.de) + '</div></div><span></span></div>';
+        }).join('') + '</div></section>'
+      : '<p class="center"><b>Kein einziger Fehler!</b></p>';
+    return '<div class="stage"><section class="card result"><span class="tag">Mini-Test</span><h2 style="font-size:1.9rem">' + s.right + ' von ' + s.total + ' richtig</h2>' +
+      '<p>' + txt + '</p><p class="muted small">Der Test ändert deinen Kasten nicht.</p></section>' + wrong + '</div>' +
+      '<div class="actions"><button class="btn primary" data-a="start-test">Neuer Mini-Test</button><button class="btn ghost" data-a="quit">Fertig</button></div>';
+  }
+
   function vResult() {
+    if (session && session.test) return vTestResult();
     var s = session, p = profile(), P = prog(), today = P.days[dayKey(new Date())] || 0;
     var ratio = s.total ? s.right / s.total : 0;
     var stars = ratio >= 0.9 ? 3 : ratio >= 0.7 ? 2 : 1;
@@ -671,8 +718,8 @@
     try { window.scrollTo(0, 0); } catch (e) {}
     if (view === 'session') {
       var s = session;
-      if (s.mode === 'type' && s.phase === 'ask') { var inp = $('#ans'); if (inp) inp.focus(); }
-      if (s.mode === 'listen' && s.phase === 'ask' && s.auto) { s.auto = false; speak(spoken(s.q[s.i].w)); }
+      if (curMode(s) === 'type' && s.phase === 'ask') { var inp = $('#ans'); if (inp) inp.focus(); }
+      if (curMode(s) === 'listen' && s.phase === 'ask' && s.auto) { s.auto = false; speak(spoken(s.q[s.i].w)); }
     }
   }
 
@@ -688,10 +735,24 @@
     view = 'session'; render();
   }
 
+  function startTest() {
+    var pool = shuffle(selectedWords().slice()).slice(0, TEST_SIZE);
+    if (!pool.length) return;
+    var subs = shuffle(pool.map(function (_, i) { return i % 2 ? 'type' : 'listen'; }));
+    session = {
+      mode: 'test', test: true, practice: false, i: 0, right: 0, total: 0, wrong: [],
+      q: pool.map(function (w, i) { return { w: w, retry: false, sub: subs[i], opts: subs[i] === 'listen' ? makeOpts(w) : null }; }),
+      phase: 'ask', res: null, auto: true
+    };
+    // Typ-Fragen starten in 'ask'; Hör-Fragen ebenfalls
+    view = 'session'; render();
+  }
+
   function record(ok) {
     var s = session, it = s.q[s.i];
     if (it.retry) return;
     s.total++; if (ok) s.right++;
+    if (s.test) { if (!ok) s.wrong.push(it.w); return; }
     if (!s.practice) {
       var P = prog(), c = P.cards[it.w.id] || { box: 1, due: 0, right: 0, wrong: 0 };
       if (ok) { c.box = Math.min(5, c.box + 1); c.right++; } else { c.box = 1; c.wrong++; }
@@ -706,15 +767,22 @@
   function nextItem() {
     var s = session; clearTimeout(s.timer); s.i++;
     if (s.i >= s.q.length) { view = 'result'; render(); return; }
-    s.phase = s.mode === 'cards' ? 'front' : 'ask'; s.res = null; s.auto = true; render();
+    s.phase = curMode(s) === 'cards' ? 'front' : 'ask'; s.res = null; s.auto = true; render();
   }
 
+  function keepScroll() { var y = 0; try { y = window.scrollY; } catch (e) {} render(); try { window.scrollTo(0, y); } catch (e) {} }
   var act = {
     pick: function (d) { pid = d.id; view = 'home'; render(); },
     'home-out': function () { view = 'profiles'; render(); },
     parents: function () { msg = ''; resetFor = null; view = 'parents'; render(); },
     quit: function () { if (session) clearTimeout(session.timer); if (view === 'parents') { view = 'profiles'; } else { view = 'home'; } render(); },
-    start: function (d) { startSession(d.m); },
+    'start-test': function () { startTest(); },
+    start: function (d) { if (selectedWords().length) startSession(d.m); },
+    'chap-all': function () {
+      var chs = chapters(), allOn = chs.every(function (c) { return chapOn(c.key); });
+      DB.settings.off = allOn ? chs.map(function (c) { return c.key; }) : [];
+      save(['config']); keepScroll();
+    },
     speak: function () { var s = session; if (s) speak(spoken(s.q[s.i].w)); },
     flip: function () { session.phase = 'back'; render(); },
     know: function () { record(true); nextItem(); },
@@ -765,6 +833,14 @@
     if (t.dataset && t.dataset.name) {
       var pr = DB.profiles.find(function (x) { return x.id === t.dataset.name; }), v = t.value.trim();
       if (pr && v) { pr.name = v.slice(0, 20); save(['config']); }
+    }
+    if (t.dataset && t.dataset.chap !== undefined) {
+      var ch = chapters()[+t.dataset.chap];
+      if (ch) {
+        var off = (DB.settings.off || []).filter(function (k) { return k !== ch.key; });
+        if (!t.checked) off.push(ch.key);
+        DB.settings.off = off; save(['config']); keepScroll();
+      }
     }
     if (t.id === 'ipaToggle') { DB.settings.ipa = t.checked; save(['config']); }
   });
