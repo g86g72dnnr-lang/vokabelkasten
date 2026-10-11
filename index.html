@@ -449,12 +449,27 @@
   function prog(id) { return DB.prog[id || pid]; }
   function kindLabel(w) { return w.kind === 'p' ? 'Wendung' : 'Wort'; }
 
-  function streak(id) {
-    var P = prog(id), n = 0, d = new Date();
-    if ((P.days[dayKey(d)] || 0) < GOAL) d.setDate(d.getDate() - 1);
-    while ((P.days[dayKey(d)] || 0) >= GOAL) { n++; d.setDate(d.getDate() - 1); }
-    return n;
+  /* Serie: Tagesziel erreicht = +1. Schonfrist: ein verpasster Tag pro Woche (Mo-So) kostet die Serie nichts,
+     aber nie zwei Tage hintereinander. Rekord = längste Serie überhaupt. */
+  function weekKey(d) { var m = new Date(d.getTime()); m.setDate(m.getDate() - ((m.getDay() + 6) % 7)); return dayKey(m); }
+  function streakInfo(id) {
+    var P = prog(id), keys = Object.keys(P.days || {}).filter(function (k) { return /^\d{4}-\d\d-\d\d$/.test(k); }).sort();
+    var out = { cur: 0, best: 0, freezeUsed: false };
+    if (!keys.length) return out;
+    var p = keys[0].split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]), end = new Date(); end.setHours(0, 0, 0, 0);
+    var todayKey = dayKey(end), used = {}, prevBridged = false, cur = 0, best = 0;
+    for (var guard = 0; d <= end && guard < 4000; guard++, d.setDate(d.getDate() + 1)) {
+      var k = dayKey(d), met = (P.days[k] || 0) >= GOAL;
+      if (met) { cur++; prevBridged = false; }
+      else if (k === todayKey) { /* heute noch offen, kein Verlust */ }
+      else if (cur > 0 && !prevBridged && !used[weekKey(d)]) { used[weekKey(d)] = true; prevBridged = true; }
+      else { cur = 0; prevBridged = false; }
+      if (cur > best) best = cur;
+    }
+    out.cur = cur; out.best = best; out.freezeUsed = !!used[weekKey(end)];
+    return out;
   }
+  function streak(id) { return streakInfo(id).cur; }
 
   function buildQueue(force) {
     var P = prog(), now = Date.now(), words = selectedWords(), due = [], fresh = [], rnd = {};
@@ -544,7 +559,7 @@
   }
 
   function vHome() {
-    var p = profile(), P = prog(), today = P.days[dayKey(new Date())] || 0, st = streak();
+    var p = profile(), P = prog(), today = P.days[dayKey(new Date())] || 0, si = streakInfo(), st = si.cur;
     var n = buildQueue(false).length, chs = chapters(), nSel = selectedWords().length;
     var chapHtml = chs.map(function (c, i) {
       var due = 0;
@@ -570,8 +585,9 @@
     var pct = Math.min(100, Math.round(today / GOAL * 100));
     return '<div class="top"><h1 style="font-size:1.9rem">Hallo, ' + esc(p.name) + '!</h1>' +
       '<button class="btn link" data-a="home-out">Wechseln</button></div>' +
-      '<div class="card stats"><div class="streak">' + ICON.flame + '<div><b>' + st + '</b><br><span>' + (st === 1 ? 'Tag' : 'Tage') + ' in Folge</span></div></div>' +
+      '<div class="card stats"><div class="streak">' + ICON.flame + '<div><b>' + st + '</b><br><span>' + (st === 1 ? 'Tag' : 'Tage') + ' in Folge</span><br><span>Rekord: ' + si.best + '</span></div></div>' +
       '<div class="goal"><p>Heute: <b>' + Math.min(today, GOAL) + ' von ' + GOAL + '</b> Wörtern</p><div class="meter"><span style="width:' + pct + '%"></span></div></div></div>' +
+      '<p class="muted small">Schonfrist: Ein verpasster Tag pro Woche kostet deine Serie nichts. Diese Woche: <b>' + (si.freezeUsed ? 'verbraucht' : 'noch frei') + '</b>.</p>' +
       chapSec + todo +
       '<div class="modes">' +
       '<button class="mode" data-a="start" data-m="cards"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.cards + '</span><span><strong>Karteikarten</strong><span class="d">Umdrehen und selbst prüfen</span></span></button>' +
