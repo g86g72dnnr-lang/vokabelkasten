@@ -166,6 +166,9 @@
   .ladder figcaption { font-size: .72rem; color: var(--muted); }
   .ladder .locked svg { filter: brightness(0) opacity(.28); }
   .lvl { text-align: center; display: grid; justify-items: center; gap: 6px; border-color: #F2B01E; }
+  .chapdet { border: 2px solid var(--line); border-radius: 16px; background: var(--surface); margin: 8px 0; }
+  .chapdet summary { min-height: 52px; padding: 0 14px; display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; }
+  .chapdet .list { padding: 0 8px 8px; }
   .goal { display: grid; gap: 6px; min-width: 0; }
   .goal p { font-size: .9rem; }
 
@@ -427,7 +430,60 @@ var TIERE = (function () {
     G('14', 'to cook', 'kʊk', 'kochen', ['kochen'], 'Cooking is great!', 'w', ['cook']),
     G('15', 'netball', "'netbɔ:l", 'Korbball', ['Korbball'], "Netball is a girls' game at British schools.", 'w')
   ];
-  var BASE = UNIT1.concat(NUMBERS, COLOURS, GREENWICH);
+
+  /* Languages (Buchseite 171) */
+  var L = mk('u5-', 'Languages');
+  var LANGUAGES = [
+    L('01', 'I can …', "'aɪ ˌkən", 'Ich kann …', ['Ich kann …'], 'I can see Sherlock.', 'p', ['i can']),
+    L('02', 'to speak', 'spi:k', 'sprechen', ['sprechen'], 'Can you speak English?', 'w', ['speak']),
+    L('03', 'to understand', "ˌʌndə'stænd", 'verstehen', ['verstehen'], 'I can understand you.', 'w', ['understand']),
+    L('04', 'to read', 'ri:d', 'lesen', ['lesen'], 'The dialogue is in English. Can you read it?', 'w', ['read']),
+    L('05', 'to write', 'raɪt', 'schreiben', ['schreiben'], 'Write your name.', 'w', ['write']),
+    L('06', "I don't know …", "aɪ ˌdəʊnt 'nəʊ", 'Ich kann kein …', ['Ich kann kein …'], "I don't know Arabic.", 'p', ['i do not know']),
+    L('07', "I'd like to learn …", "aɪd ˌlaɪk tə 'lɜ:n", 'Ich würde gerne … lernen.', ['Ich würde gerne … lernen.'], "I'd like to learn English.", 'p', ['i would like to learn']),
+    L('08', 'I like …', "aɪ 'laɪk", 'Mir gefällt …; Ich mag …', ['Mir gefällt …', 'Ich mag …'], 'I like my friends.', 'p'),
+    L('09', 'word', 'wɜ:d', 'Wort', ['Wort'], 'Look at the new words.', 'w'),
+    L('10', 'sound', 'saʊnd', 'Ton; Geräusch; Klang', ['Ton', 'Geräusch', 'Klang'], "I like the sound of 'r' in Italian words.", 'w'),
+    L('11', 'of', 'ɒv; əv', 'von', ['von'], 'Look! A photo of Sherlock.', 'w'),
+    L('12', 'It sounds …', "ɪt 'saʊndz", 'Es klingt …', ['Es klingt …'], "I like the word 'hola' in Spanish. It sounds cool.", 'p', ['it sounds']),
+    L('13', 'great', 'greɪt', 'großartig; toll; super', ['großartig', 'toll', 'super'], 'French is great too.', 'w'),
+    L('14', 'song', 'sɒŋ', 'Song; Lied', ['Song', 'Lied'], '', 'w'),
+    L('15', 'Sing …', 'sɪŋ', 'Singe/Singt …', ['Singe/Singt …', 'Singe', 'Singt'], '', 'p', ['sing', 'to sing']),
+    L('16', 'Add …', 'æd', 'Füge/Fügt … hinzu.', ['Füge/Fügt … hinzu.', 'Füge … hinzu', 'Fügt … hinzu'], '', 'p', ['add']),
+    L('17', 'all', 'ɔ:l', 'alle', ['alle'], '', 'w')
+  ];
+
+  /* Welcome to London! */
+  var T = mk('u6-', 'Welcome to London!');
+  var LONDON = [
+    T('01', 'welcome (to)', "'welkəm (tʊ)", 'willkommen (in)', ['willkommen (in)', 'willkommen'], 'Welcome to London!', 'w', ['welcome', 'welcome to']),
+    T('02', 'What can you hear?', "ˌwɒt kən ju 'hɪə", 'Was kannst du/könnt ihr hören?', ['Was kannst du hören?', 'Was könnt ihr hören?'], 'What can you hear in London, Sherlock?', 'p'),
+    T('03', 'to hear', 'hɪə', 'hören', ['hören'], 'Hello, can you hear me?', 'w', ['hear']),
+    T('04', 'the', 'ðə; ði', 'der; die (auch Pl.); das', ['der', 'die', 'das'], 'Vor Vokalen und Doppellauten spricht man [ði]: the sound [ðə] – the example [ði].', 'w'),
+    T('05', 'a', 'ə', 'ein/-e', ['ein/-e', 'ein', 'eine'], 'a friend', 'w'),
+    T('06', 'boat', 'bəʊt', 'Boot', ['Boot'], 'Can you see the boat?', 'w'),
+    T('07', 'flower', "'flaʊə", 'Blume', ['Blume'], 'I can see flowers in the park.', 'w'),
+    T('08', 'girl', 'gɜ:l', 'Mädchen', ['Mädchen'], 'Alina is a girl.', 'w'),
+    T('09', 'on', 'ɒn', 'auf; an; am; in; im', ['auf', 'an', 'am', 'in', 'im'], 'I can see you on the boat.', 'w'),
+    T('10', 'skates (pl)', 'skeɪts', 'Inlineskates; Rollschuhe; Schlittschuhe', ['Inlineskates', 'Rollschuhe', 'Schlittschuhe'], 'My friend is on skates.', 'w', ['skates']),
+    T('11', 'boy', 'bɔɪ', 'Junge', ['Junge'], 'I can see boys on skateboards.', 'w'),
+    T('12', 'mother', "'mʌðə", 'Mutter', ['Mutter'], 'My mother is from London.', 'w'),
+    T('13', 'father', "'fɑ:ðə", 'Vater', ['Vater'], 'My father is from Ulm.', 'w'),
+    T('14', 'dog', 'dɒg', 'Hund', ['Hund'], 'Sherlock is a dog.', 'w'),
+    T('15', 'cat', 'kæt', 'Katze', ['Katze'], 'A cat is in the park.', 'w'),
+    T('16', 'bird', 'bɜ:d', 'Vogel', ['Vogel'], 'I can see a bird.', 'w'),
+    T('17', 'butterfly', "'bʌtəflaɪ", 'Schmetterling', ['Schmetterling'], 'Can you see the butterfly?', 'w'),
+    T('18', 'bee', 'bi:', 'Biene', ['Biene'], 'A bee is on the flower.', 'w'),
+    T('19', 'tree', 'tri:', 'Baum', ['Baum'], 'I can see birds in the trees.', 'w'),
+    T('20', 'grass', 'grɑ:s', 'Gras', ['Gras'], "I'm on the grass.", 'w'),
+    T('21', 'bike', 'baɪk', 'Fahrrad', ['Fahrrad'], 'Das e am Wortende ist meist stumm, es wird nicht gesprochen.', 'w'),
+    T('22', 'to have a picnic', "ˌhæv ə 'pɪknɪk", 'ein Picknick machen', ['ein Picknick machen'], 'You can have a picnic in the park.', 'p', ['have a picnic']),
+    T('23', 'book', 'bʊk', 'Buch', ['Buch'], 'I can read a book.', 'w'),
+    T('24', 'to play', 'pleɪ', 'spielen', ['spielen'], 'You can play football in the park.', 'w', ['play']),
+    T('25', 'to ride', 'raɪd', 'fahren; reiten', ['fahren', 'reiten'], 'You can ride a bike.', 'w', ['ride']),
+    T('26', 'to talk to', "'tɔ:k tə", 'reden mit', ['reden mit'], 'Talk to your friends.', 'p', ['talk to'])
+  ];
+  var BASE = UNIT1.concat(NUMBERS, COLOURS, GREENWICH, LANGUAGES, LONDON);
 
   /* ---------- Speicher ---------- */
   function fixNames(list) {
@@ -638,7 +694,7 @@ var TIERE = (function () {
       return '<figure class="' + (i ? 'locked' : '') + '">' + TIERE.draw(sel, i, 'ruhig', 72) + '<figcaption>' + nme + '<br>' + (i === 0 ? 'jetzt' : 'ab ' + STAGES[i] + ' Tagen') + '</figcaption></figure>';
     }).join('') + '</div><p class="muted small">Jeden Tag, an dem du dein Ziel schaffst, kommt dein Tier ein Stück weiter.</p></section>' : '';
     return '<h1 style="font-size:1.9rem">Wähle dein Tier</h1><p class="muted">Es wächst mit dir, je öfter du übst.</p><div class="petrow">' + cards + '</div>' + ladder +
-      '<div class="actions"><button class="btn primary" data-a="pet-ok"' + (sel ? '' : ' disabled') + '>Das ist mein Tier</button><button class="btn link" data-a="home-out">Zurück</button></div>';
+      '<div class="actions"><button class="btn primary" data-a="pet-ok"' + (sel ? '' : ' disabled') + '>Das ist mein Tier</button><button class="btn link" data-a="pet-back">Das bin ich nicht</button></div>';
   }
   var WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
   function weekDays(id, info) {
@@ -761,7 +817,7 @@ var TIERE = (function () {
   };
 
   /* ---------- Zustand ---------- */
-  var petSel = null, view = 'profiles', pid = null, session = null, msg = '', resetFor = null;
+  var openChap = {}, petSel = null, view = 'profiles', pid = null, session = null, msg = '', resetFor = null;
 
   /* ---------- Ansichten ---------- */
   function vProfiles() {
@@ -772,8 +828,8 @@ var TIERE = (function () {
         '<span><strong>' + esc(p.name) + '</strong><span class="muted small">' + (st > 0 ? st + (st === 1 ? ' Tag' : ' Tage') + ' in Folge' : 'Los geht\'s') + '</span></span></button>';
     }).join('');
     return '<header class="brand"><h1>Vokabelkasten</h1><p>Englisch · ' + allWords().length + ' Wörter</p></header>' +
-      '<p><b>Wer übt heute?</b></p><div class="pick">' + items + '</div>' +
-      '<p class="muted small">' + esc(cloudLine()) + '</p>' +
+      '<p><b>Wer bist du?</b></p><div class="pick">' + items + '</div>' +
+      '<p class="muted small">Dieses Handy merkt sich deine Wahl.</p>' +
       '<div class="actions"><button class="btn link" data-a="parents">Für Eltern</button></div>';
   }
 
@@ -823,7 +879,7 @@ var TIERE = (function () {
     var pct = Math.min(100, Math.round(today / GOAL * 100));
     return '<div class="top"><h1 style="font-size:1.9rem">Hallo, ' + esc(p.name) + '!</h1>' +
       '<div class="topbtns"><button class="icon-btn" data-a="snd" aria-pressed="' + soundOn() + '" aria-label="' + (soundOn() ? 'Ton ausschalten' : 'Ton einschalten') + '">' + ICON.speaker(22) + (soundOn() ? '' : '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" style="position:absolute"><path d="M4 4l16 16" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>') + '</button>' +
-      '<button class="btn link" data-a="home-out">Wechseln</button></div></div>' +
+      '</div></div>' +
       (levelUpPending() ? levelUpHtml() : '') + heroHtml(si) + (prog().pet ? growHtml() : '') +
       '<div class="card stats"><div class="goal"><p>Heute: <b>' + Math.min(today, GOAL) + ' von ' + GOAL + '</b> Wörtern</p><div class="meter"><span style="width:' + pct + '%"></span></div></div></div>' +
       chapSec + todo +
@@ -834,7 +890,8 @@ var TIERE = (function () {
       '<button class="mode" data-a="start-test"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.check + '</span><span><strong>Mini-Test</strong><span class="d">' + Math.min(TEST_SIZE, nSel) + ' Fragen gemischt, ohne Hilfen</span></span></button>' +
       '</div>' +
       '<section class="card"><h3 style="font-size:1.15rem">Dein Kasten</h3><div class="trays">' + trays + '</div>' +
-      '<p class="muted small">Ein richtiges Wort rutscht ein Fach weiter und kommt später wieder. Ein falsches fällt zurück in Fach 1.</p></section>';
+      '<p class="muted small">Ein richtiges Wort rutscht ein Fach weiter und kommt später wieder. Ein falsches fällt zurück in Fach 1.</p></section>' +
+      '<div class="actions"><button class="btn link" data-a="parents">Für Eltern</button></div>';
   }
 
   function ipaHtml(w) { return (DB.settings.ipa && w.ipa && !(session && session.test)) ? '<div class="ipa">[' + esc(w.ipa) + ']</div>' : ''; }
@@ -935,10 +992,14 @@ var TIERE = (function () {
     var names = DB.profiles.map(function (p) {
       return '<div class="field"><label for="n-' + esc(p.id) + '">Name</label><input id="n-' + esc(p.id) + '" class="input" data-name="' + esc(p.id) + '" value="' + esc(p.name) + '" maxlength="20"></div>';
     }).join('');
-    var list = allWords().map(function (w) {
-      var custom = w.id.charAt(0) === 'c';
-      return '<div class="li"><div><b>' + esc(w.en) + '</b> <span class="tag">' + kindLabel(w) + '</span><div class="de">' + esc(w.de) + '</div></div>' +
-        (custom ? '<button class="del" data-a="del" data-id="' + esc(w.id) + '" aria-label="' + esc(w.en) + ' löschen">' + ICON.cross + '</button>' : '<span></span>') + '</div>';
+    var chs = chapters();
+    var list = chs.map(function (c) {
+      var rows = allWords().filter(function (w) { return w.lesson === c.key; }).map(function (w) {
+        var custom = w.id.charAt(0) === 'c';
+        return '<div class="li"><div><b>' + esc(w.en) + '</b> <span class="tag">' + kindLabel(w) + '</span><div class="de">' + esc(w.de) + '</div></div>' +
+          (custom ? '<button class="del" data-a="del" data-id="' + esc(w.id) + '" aria-label="' + esc(w.en) + ' löschen">' + ICON.cross + '</button>' : '<span></span>') + '</div>';
+      }).join('');
+      return '<details class="chapdet" data-ch="' + esc(c.key) + '"' + (openChap[c.key] ? ' open' : '') + '><summary>' + esc(c.label) + ' <span class="muted small">(' + c.n + ')</span></summary><div class="list">' + rows + '</div></details>';
     }).join('');
     var resets = DB.profiles.map(function (p) {
       if (resetFor === p.id) {
@@ -947,23 +1008,26 @@ var TIERE = (function () {
       }
       return '<button class="btn ghost sm" data-a="reset" data-id="' + esc(p.id) + '" style="width:100%">Fortschritt von ' + esc(p.name) + ' zurücksetzen</button>';
     }).join('');
+    var me = DB.profiles.find(function (p) { return p.id === DB.settings.me; });
+    var tiere = DB.profiles.map(function (p) {
+      var pp = DB.prog[p.id] || {};
+      return '<button class="btn ghost sm" data-a="pet-change" data-id="' + esc(p.id) + '" style="width:100%">' + esc(p.name) + ': ' + (pp.pet ? PETS[pp.pet] + ' neu wählen' : 'Tier wird beim nächsten Start gewählt') + '</button>';
+    }).join('');
     return '<div class="shead"><button class="icon-btn" data-a="quit" aria-label="Zurück">' + ICON.back + '</button><h1 style="font-size:1.7rem">Für Eltern</h1></div>' +
-      '<p class="note">Das ist der Prototyp. Der Foto-Import ist noch nicht eingebaut, die Wörter der Seite „Hello!“ sind bereits eingetragen.</p>' +
       '<p class="note">' + esc(cloudLine()) + '</p>' +
+      '<section class="sec"><h2>Profil auf diesem Gerät</h2><p class="muted small">Dieses Gerät gehört: <b>' + (me ? esc(me.name) : 'noch niemandem') + '</b></p>' +
+      '<button class="btn ghost sm" data-a="me-change" style="width:100%">Profil auf diesem Gerät ändern</button></section>' +
       '<section class="sec"><h2>Namen</h2>' + names + '</section>' +
       '<section class="sec"><h2>Töne</h2><label class="switch"><input type="checkbox" id="sndToggle"' + (soundOn() ? ' checked' : '') + '><span>Töne bei Antworten und Belohnungen</span></label><p class="muted small">Auf dem iPhone stumm, wenn der Seitenschalter auf Stumm steht.</p></section>' +
       '<section class="sec"><h2>Anzeige</h2><label class="switch"><input type="checkbox" id="ipaToggle"' + (DB.settings.ipa ? ' checked' : '') + '><span>Lautschrift anzeigen</span></label></section>' +
+      '<section class="sec"><h2>Tiere</h2>' + tiere + '</section>' +
+      '<section class="sec"><h2>Fortschritt</h2>' + resets + '</section>' +
       '<section class="sec"><h2>Neues Wort</h2><form id="addForm" class="sec" autocomplete="off">' +
       '<div class="field"><label for="addEn">Englisch</label><input id="addEn" class="input" autocapitalize="none" autocorrect="off" spellcheck="false"></div>' +
       '<div class="field"><label for="addDe">Deutsch (mehrere Bedeutungen mit Strichpunkt trennen)</label><input id="addDe" class="input" autocapitalize="none" autocorrect="off" spellcheck="false"></div>' +
       '<div class="field"><label for="addEx">Beispielsatz (optional)</label><input id="addEx" class="input" autocorrect="off" spellcheck="false"></div>' +
       '<button class="btn primary" type="submit">Hinzufügen</button>' + (msg ? '<p class="ok-msg" role="status">' + esc(msg) + '</p>' : '') + '</form></section>' +
-      '<section class="sec"><h2>Wörter (' + allWords().length + ')</h2><div class="list">' + list + '</div></section>' +
-      '<section class="sec"><h2>Tiere</h2>' + DB.profiles.map(function (p) {
-        var pp = DB.prog[p.id] || {};
-        return '<button class="btn ghost sm" data-a="pet-change" data-id="' + esc(p.id) + '" style="width:100%">' + esc(p.name) + ': ' + (pp.pet ? PETS[pp.pet] + ' neu wählen' : 'Tier wird beim nächsten Start gewählt') + '</button>';
-      }).join('') + '</section>' +
-      '<section class="sec"><h2>Fortschritt</h2>' + resets + '</section>';
+      '<section class="sec"><h2>Wörter (' + allWords().length + ')</h2>' + list + '</section>';
   }
 
   /* ---------- Rendern ---------- */
@@ -1040,15 +1104,22 @@ var TIERE = (function () {
 
   function keepScroll() { var y = 0; try { y = window.scrollY; } catch (e) {} render(); try { window.scrollTo(0, y); } catch (e) {} }
   var act = {
-    pick: function (d) { pid = d.id; if (!prog().pet) { petSel = null; view = 'pet'; } else view = 'home'; render(); },
+    pick: function (d) { pid = d.id; DB.settings.me = d.id; save(['config']); if (!prog().pet) { petSel = null; view = 'pet'; } else view = 'home'; render(); },
+    'pet-back': function () { DB.settings.me = null; save(['config']); pid = null; petSel = null; view = 'profiles'; render(); },
+    'me-change': function () { DB.settings.me = null; save(['config']); pid = null; view = 'profiles'; render(); },
     'pet-sel': function (d) { petSel = d.k; keepScroll(); },
     'pet-ok': function () { if (!petSel) return; var P = prog(); P.pet = petSel; P.seen = petStage(); save(['prog-' + pid]); view = 'home'; render(); },
     'lvl-ok': function () { var P = prog(); P.seen = petStage(); save(['prog-' + pid]); render(); },
     snd: function () { DB.settings.sound = !soundOn(); save(['config']); if (soundOn()) sfx('ok'); keepScroll(); },
     'pet-change': function (d) { var P = DB.prog[d.id]; if (P) { delete P.pet; P.seen = 0; save(['prog-' + d.id]); } msg = ''; render(); },
     'home-out': function () { view = 'profiles'; render(); },
-    parents: function () { msg = ''; resetFor = null; view = 'parents'; render(); },
-    quit: function () { if (session) clearTimeout(session.timer); if (view === 'parents') { view = 'profiles'; } else { view = 'home'; } render(); },
+    parents: function () {
+      var a = 13 + Math.floor(Math.random() * 7), b = 6 + Math.floor(Math.random() * 4);
+      var r = window.prompt('Nur für Eltern. Bitte rechnen: ' + a + ' × ' + b + ' = ?');
+      if (r === null || parseInt(r, 10) !== a * b) return;
+      msg = ''; resetFor = null; view = 'parents'; render();
+    },
+    quit: function () { if (session) clearTimeout(session.timer); if (view === 'parents') { view = (pid && prog()) ? 'home' : 'profiles'; } else { view = 'home'; } render(); },
     'start-test': function () { startTest(); },
     start: function (d) { if (selectedWords().length) startSession(d.m); },
     'chap-all': function () {
@@ -1096,6 +1167,7 @@ var TIERE = (function () {
     var t = e.target.closest('[data-a]'); if (!t || t.disabled) return;
     var f = act[t.dataset.a]; if (f) f(t.dataset);
   });
+  document.addEventListener('toggle', function (e) { var t = e.target; if (t && t.dataset && t.dataset.ch !== undefined) openChap[t.dataset.ch] = t.open; }, true);
   document.addEventListener('submit', function (e) {
     e.preventDefault();
     if (e.target.id === 'typeForm') act.check();
@@ -1119,6 +1191,20 @@ var TIERE = (function () {
     if (t.id === 'ipaToggle') { DB.settings.ipa = t.checked; save(['config']); }
   });
   if (canSpeak) { try { window.speechSynthesis.getVoices(); } catch (e) {} }
+
+  /* Gerät merkt sich sein Kind: kein Profil-Auswahlbildschirm mehr im Alltag */
+  (function () {
+    var me = DB.settings.me;
+    if (!DB.profiles.some(function (p) { return p.id === me; })) {
+      me = null;
+      var used = DB.profiles.filter(function (p) {
+        var P = DB.prog[p.id] || {};
+        return Object.keys(P.cards || {}).length || Object.keys(P.days || {}).length || P.pet;
+      });
+      if (used.length === 1) { me = used[0].id; DB.settings.me = me; save(['config']); }
+    }
+    if (me) { pid = me; view = prog().pet ? 'home' : 'pet'; }
+  })();
 
   render();
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
