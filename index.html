@@ -527,7 +527,25 @@ var TIERE = (function () {
     T('25', 'to ride', 'raɪd', 'fahren; reiten', ['fahren', 'reiten'], 'You can ride a bike.', 'w', ['ride']),
     T('26', 'to talk to', "'tɔ:k tə", 'reden mit', ['reden mit'], 'Talk to your friends.', 'p', ['talk to'])
   ];
-  var BASE = UNIT1.concat(NUMBERS, COLOURS, GREENWICH, LANGUAGES, LONDON);
+
+  /* Tomorrow is the first day of school (Buchseite 177) */
+  var S = mk('u7-', 'Tomorrow is the first day of school');
+  var SCHOOL = [
+    S('01', 'thing', 'θɪŋ', 'Ding; Sache', ['Ding', 'Sache'], '', 'w'),
+    S('02', 'exercise book', "'eksəsaɪz ˌbʊk", 'Übungsheft; Heft', ['Übungsheft', 'Heft'], 'The exercise books are blue and orange. exercise book → book', 'w'),
+    S('03', 'marker', "'mɑ:kə", 'Leuchtstift', ['Leuchtstift'], 'I have two markers.', 'w'),
+    S('04', 'pen', 'pen', 'Füller; Kugelschreiber', ['Füller', 'Kugelschreiber'], 'I have blue, green and red pens.', 'w'),
+    S('05', 'pencil', "'pensl", 'Bleistift; Buntstift', ['Bleistift', 'Buntstift'], 'Where are my pencils?', 'w', ['crayon']),
+    S('06', 'pencil case', "'pensl ˌkeɪs", 'Federmäppchen; Mäppchen', ['Federmäppchen', 'Mäppchen'], 'My pencil case is green.', 'w'),
+    S('07', 'rubber', "'rʌbə", 'Radiergummi', ['Radiergummi'], 'I can see two rubbers in the picture.', 'w'),
+    S('08', 'ruler', "'ru:lə", 'Lineal', ['Lineal'], 'My ruler is in my pencil case.', 'w'),
+    S('09', 'schoolbag', "'sku:lbæg", 'Schultasche', ['Schultasche'], 'My exercise book is in my schoolbag. schoolbag → bag', 'w', ['bag']),
+    S('10', 'crayon', "'kreɪɒn", 'Buntstift', ['Buntstift'], '', 'w', ['pencil']),
+    S('11', 'glue', 'glu:', 'Klebestift', ['Klebestift'], '', 'w'),
+    S('12', 'scissors', "'sɪzəz", 'Schere', ['Schere'], '', 'w'),
+    S('13', 'sharpener', "'ʃɑ:pnə", 'Spitzer', ['Spitzer'], '', 'w')
+  ];
+  var BASE = UNIT1.concat(NUMBERS, COLOURS, GREENWICH, LANGUAGES, LONDON, SCHOOL);
 
   /* ---------- Speicher ---------- */
   function fixNames(list) {
