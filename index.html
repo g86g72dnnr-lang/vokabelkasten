@@ -545,7 +545,55 @@ var TIERE = (function () {
     S('12', 'scissors', "'sɪzəz", 'Schere', ['Schere'], '', 'w'),
     S('13', 'sharpener', "'ʃɑ:pnə", 'Spitzer', ['Spitzer'], '', 'w')
   ];
-  var BASE = UNIT1.concat(NUMBERS, COLOURS, GREENWICH, LANGUAGES, LONDON, SCHOOL);
+
+  /* Unit 1 · A new school (Buchseiten Vocabulary Unit 1) */
+  var Q = mk('u8-', 'Unit 1 · A new school');
+  var NEWSCHOOL = [
+    Q('01', 'year', 'jɪə', 'Jahr; Schuljahr', ['Jahr', 'Schuljahr'], 'This is my first year at Thomas Tallis.', 'w'),
+    Q('02', 'to look at', "'lʊk ət", 'anschauen; ansehen', ['anschauen', 'ansehen'], 'Look at this picture in my book.', 'p', ['look at']),
+    Q('03', 'us', 'ʌs', 'uns', ['uns'], 'Can you hear us?', 'w'),
+    Q('04', 'Look!', 'lʊk', 'Schau/Schaut mal!', ['Schau mal!', 'Schaut mal!'], "Look! It's Sherlock!", 'p'),
+    Q('05', 'to look', 'lʊk', 'schauen; sehen; aussehen', ['schauen', 'sehen', 'aussehen'], "Where's my ruler? – Look in your pencil case.", 'w', ['look']),
+    Q('06', 'over there', "ˌəʊvə 'ðeə", 'da drüben; dort drüben; nach dort drüben', ['da drüben', 'dort drüben', 'nach dort drüben'], 'Your school things are over there.', 'p'),
+    Q('07', 'nervous', "'nɜ:vəs", 'nervös; aufgeregt', ['nervös', 'aufgeregt'], "I'm nervous.", 'w'),
+    Q('08', "Don't worry!", "ˌdəʊnt 'wʌri", 'Keine Sorge!', ['Keine Sorge!'], "It's OK. Don't worry!", 'p', ['do not worry']),
+    Q('09', 'to sit', 'sɪt', 'sitzen', ['sitzen'], "Where can we sit? – Let's sit here, OK?", 'w', ['sit']),
+    Q('10', 'together', "tə'geðə", 'zusammen; miteinander; gemeinsam', ['zusammen', 'miteinander', 'gemeinsam'], "Let's go to school together.", 'w'),
+    Q('11', 'sports ground', "'spɔ:ts ˌgraʊnd", 'Sportplatz', ['Sportplatz'], "Let's play football on the sports ground.", 'w'),
+    Q('12', 'why', 'waɪ', 'warum', ['warum'], 'Why is Sherlock at school?', 'w'),
+    Q('13', 'Mrs', "'mɪsɪz", 'Frau (Anrede)', ['Frau'], 'Achtung Aussprache!', 'w', ['mrs']),
+    Q('14', 'teacher', "'ti:tʃə", 'Lehrer/-in', ['Lehrer/-in', 'Lehrer', 'Lehrerin'], 'The teachers at TTS are great.', 'w'),
+    Q('15', 'please', 'pli:z', 'bitte', ['bitte'], 'Can we sit together, please?', 'w'),
+    Q('16', 'to take', 'teɪk', 'nehmen; mitnehmen; wegnehmen; bringen; mitbringen', ['nehmen', 'mitnehmen', 'wegnehmen', 'bringen', 'mitbringen'], "Ryan can't take Sherlock to school. Take that ball and go play with Sherlock.", 'w', ['take']),
+    Q('17', 'home', 'həʊm', 'nach Hause', ['nach Hause', 'Hause'], "Let's go home.", 'w'),
+    Q('18', 'crazy', "'kreɪzi", 'verrückt', ['verrückt'], "Sherlock, why are you at school?! You're crazy, go home!", 'w'),
+    Q('19', "That's … (= that is)", "ðæts; ðæt ɪz", 'Das ist …', ['Das ist …'], "That's my friend Ryan over there.", 'p', ["that's", 'that is']),
+    Q('20', 'in front of', "ɪn 'frʌnt əv", 'vor', ['vor'], "Look, it's Sherlock, in front of the school! in front of ↔ behind", 'p'),
+    Q('21', 'happy', "'hæpi", 'glücklich; froh; fröhlich', ['glücklich', 'froh', 'fröhlich'], 'Sherlock is a happy dog.', 'w'),
+    Q('22', 'to think', 'θɪŋk', 'denken; nachdenken; glauben; finden; meinen', ['denken', 'nachdenken', 'glauben', 'finden', 'meinen'], "I think Sherlock is bored. Let's play with him.", 'w', ['think']),
+    Q('23', 'angry', "'æŋgri", 'wütend; zornig; verärgert; böse', ['wütend', 'zornig', 'verärgert', 'böse'], 'The teacher is angry.', 'w'),
+    Q('24', 'surprised', "sə'praɪzd", 'überrascht', ['überrascht'], 'The friends are surprised to see Sherlock at school. (Das zweite „s" spricht man stimmhaft: [z].)', 'w'),
+    Q('25', 'sad', 'sæd', 'traurig', ['traurig'], 'sad ↔ happy', 'w'),
+    Q('26', 'uniform', "'ju:nɪfɔ:m", 'Uniform', ['Uniform'], 'The uniforms at Thomas Tallis School are … and blue.', 'w'),
+    Q('27', 'Good morning.', "ˌgʊd 'mɔ:nɪŋ", 'Guten Morgen.', ['Guten Morgen.'], 'Good morning, Mrs Wilson.', 'p'),
+    Q('28', 'tutor', "'tju:tə", 'Klassenlehrer/-in', ['Klassenlehrer/-in', 'Klassenlehrer', 'Klassenlehrerin'], 'teacher = Lehrer/-in; tutor = Klassenlehrer/-in', 'w'),
+    Q('29', 'no', 'nəʊ', 'nein', ['nein'], "Are you ten? – No, I'm not. I'm eleven. no ↔ yes", 'w'),
+    Q('30', 'not', 'nɒt', 'nicht', ['nicht'], "I'm not ten, I'm eleven!", 'w'),
+    Q('31', 'friendly', "'frendli", 'freundlich; nett', ['freundlich', 'nett'], 'Mrs Wilson is friendly. friendly → friend', 'w'),
+    Q('32', 'to help', 'help', 'helfen', ['helfen'], "I can't do this. Can you help me, please?", 'w', ['help']),
+    Q('33', 'question', "'kwestʃən", 'Frage', ['Frage'], 'Question: How old are you?', 'w'),
+    Q('34', 'planner', "'plænə", 'Handbuch; Kalender', ['Handbuch', 'Kalender'], 'Viele britische Schulen halten wichtige Informationen wie Benimmregeln und den Dresscode in einem planner fest.', 'w'),
+    Q('35', 'timetable', "'taɪmˌteɪbl", 'Stundenplan; Fahrplan', ['Stundenplan', 'Fahrplan'], 'A timetable shows you what lessons you have, and when.', 'w'),
+    Q('36', 'map', 'mæp', 'Stadtplan; Landkarte', ['Stadtplan', 'Landkarte'], 'Look at the map in your book.', 'w'),
+    Q('37', 'rule', 'ru:l', 'Regel', ['Regel'], 'You can read the rules in the planner.', 'w'),
+    Q('38', "Don't be late for school.", "ˌdəʊnt bi ˌleɪt fə 'sku:l", 'Komm(t) nicht zu spät zur Schule.', ['Komm nicht zu spät zur Schule.', 'Kommt nicht zu spät zur Schule.'], '', 'p', ['do not be late for school']),
+    Q('39', 'lesson', "'lesn", 'Unterrichtsstunde; Schulstunde; Unterricht', ['Unterrichtsstunde', 'Schulstunde', 'Unterricht'], "What's your favourite lesson?", 'w'),
+    Q('40', 'strict', 'strɪkt', 'streng; strikt', ['streng', 'strikt'], 'The school rules are strict.', 'w'),
+    Q('41', 'library', "'laɪbri", 'Bibliothek; Bücherei', ['Bibliothek', 'Bücherei'], 'Achtung Aussprache!', 'w'),
+    Q('42', 'an', 'ən', 'ein/-e', ['ein/-e', 'ein', 'eine'], 'Vor Vokalen wird a meistens zu an: a cat, a dog, ABER: an ice cream', 'w'),
+    Q('43', 'assembly', "ə'sembli", 'Versammlung; Morgenappell', ['Versammlung', 'Morgenappell'], 'In den meisten britischen Schulen trifft sich jeder Jahrgang einmal wöchentlich zum assembly.', 'w')
+  ];
+  var BASE = UNIT1.concat(NUMBERS, COLOURS, GREENWICH, LANGUAGES, LONDON, SCHOOL, NEWSCHOOL);
 
   /* ---------- Speicher ---------- */
   function fixNames(list) {
@@ -688,7 +736,7 @@ var TIERE = (function () {
   }
   function allWords() { return BASE.concat(DB.custom); }
   /* Kapitel: Reihenfolge wie im Buch; eigene Wörter zuletzt */
-  var CHAP_NAMES = { 'Unit 1 · Hello!': 'Hello!', 'Zahlen 0–12': 'Zahlen 0–12', 'Farben': 'Farben', 'The friends in Greenwich': 'The friends in Greenwich' };
+  var CHAP_NAMES = { 'Unit 1 · Hello!': 'Hello!', 'Zahlen 0–12': 'Zahlen 0–12', 'Farben': 'Farben', 'The friends in Greenwich': 'The friends in Greenwich', 'Unit 1 · A new school': 'Unit 1 · A new school' };
   function chapters() {
     var out = [], seen = {};
     allWords().forEach(function (w) {
