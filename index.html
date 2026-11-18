@@ -232,11 +232,30 @@
   .chaps { display: grid; gap: 2px; margin: 6px 0 4px; }
   .chap { min-height: 52px; font-weight: 600; }
   .mode[disabled] { opacity: .45; }
+  .newtag { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 99px; background: var(--tip); color: var(--on-tip); font-size: .7rem; font-weight: 700; vertical-align: middle; font-family: var(--body); }
+  /* Neue Übungsarten */
+  .sent { font-family: var(--display); font-size: 1.5rem; line-height: 1.35; text-align: center; overflow-wrap: anywhere; }
+  .blank { display: inline-block; min-width: 3.2em; border-bottom: 4px solid var(--accent); margin: 0 2px; line-height: 1; }
+  .blank.fill { border-bottom-color: var(--good); color: var(--good); font-weight: 700; }
+  .hint { text-align: center; color: var(--muted); }
+  .slots, .tiles { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .slot { width: 44px; height: 54px; border: 2px dashed var(--line); border-radius: 12px; display: grid; place-items: center; font: 700 1.5rem var(--display); background: var(--surface); }
+  .slot.on { border-style: solid; border-color: var(--accent); }
+  .slots.ok .slot { border-color: var(--good); background: var(--good-bg); color: var(--good); }
+  .slots.no .slot { border-color: var(--bad); background: var(--bad-bg); color: var(--bad); }
+  .tile { width: 52px; height: 58px; border: 2px solid var(--line); border-radius: 14px; background: var(--surface); font: 700 1.6rem var(--display); color: var(--ink); }
+  .tile:active { transform: scale(.94); }
+  .tile:disabled { opacity: .25; transform: none; }
+  .memgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .mc { min-height: 84px; padding: 6px; border: 2px solid var(--line); border-radius: 16px; background: var(--accent); color: var(--on-accent); font: 700 1.05rem var(--display); display: grid; place-items: center; text-align: center; overflow-wrap: anywhere; line-height: 1.15; }
+  .mc.up { background: var(--surface); color: var(--ink); border-color: var(--accent); }
+  .mc.done { background: var(--good-bg); color: var(--good); border-color: var(--good); }
+  .mc:active { transform: scale(.97); }
   .ok-msg { color: var(--good); font-weight: 500; }
 
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
-    .btn:active, .mode:active, .opt:active, .bigspeak:active { transform: none; }
+    .btn:active, .mode:active, .opt:active, .bigspeak:active, .tile:active, .mc:active { transform: none; }
   }
 </style>
 </head>
@@ -437,10 +456,10 @@ var TIERE = (function () {
     G('21', 'I', 'aɪ', 'ich', ['ich'], 'I like football.', 'w'),
     G('22', 'you', 'ju:', 'du; ihr; Sie', ['du', 'ihr', 'Sie'], '', 'w'),
     G('23', 'he', 'hi:', 'er', ['er'], '', 'w'),
-    G('24', 'she', 'ʃi:', 'sie', ['sie'], 'Ruby is my friend. She is eleven.', 'w'),
+    G('24', 'she', 'ʃi:', 'sie', ['sie'], 'Ruby is my friend. She is eleven. (she = sie, eine Person)', 'w'),
     G('25', 'it', 'ɪt', 'es', ['es'], '', 'w'),
     G('26', 'we', 'wi:', 'wir', ['wir'], '', 'w'),
-    G('27', 'they', 'ðeɪ', 'sie', ['sie'], '', 'w'),
+    G('27', 'they', 'ðeɪ', 'sie', ['sie'], 'Ryan and Ruby are twins. They are eleven. (they = sie, mehrere Personen)', 'w'),
     G('28', 'hobby', "'hɒbi", 'Hobby', ['Hobby'], 'Cooking and taking photos are two great hobbies. (Mehrzahl: hobbies)', 'w', ['hobbies']),
     G('29', 'to watch', 'wɒtʃ', '(sich) ansehen; beobachten; zuschauen', ['ansehen', 'sich ansehen', 'beobachten', 'zuschauen'], "Let's watch videos.", 'w', ['watch']),
     G('30', "you're (= you are)", 'jɔ:r', 'du bist; Sie sind', ['du bist', 'Sie sind'], "You're my best friend.", 'w', ["you're", 'you are']),
@@ -483,7 +502,7 @@ var TIERE = (function () {
     L('03', 'to understand', "ˌʌndə'stænd", 'verstehen', ['verstehen'], 'I can understand you.', 'w', ['understand']),
     L('04', 'to read', 'ri:d', 'lesen', ['lesen'], 'The dialogue is in English. Can you read it?', 'w', ['read']),
     L('05', 'to write', 'raɪt', 'schreiben', ['schreiben'], 'Write your name.', 'w', ['write']),
-    L('06', "I don't know …", "aɪ ˌdəʊnt 'nəʊ", 'Ich kann kein …', ['Ich kann kein …'], "I don't know Arabic.", 'p', ['i do not know']),
+    L('06', "I don't know …", "aɪ ˌdəʊnt 'nəʊ", 'Ich weiß nicht …; Ich kenne kein …', ['Ich weiß nicht …', 'Ich kenne kein …', 'Ich kann kein …'], "I don't know Arabic. (Buch: Ich kann kein Arabisch.)", 'p', ['i do not know']),
     L('07', "I'd like to learn …", "aɪd ˌlaɪk tə 'lɜ:n", 'Ich würde gerne … lernen.', ['Ich würde gerne … lernen.'], "I'd like to learn English.", 'p', ['i would like to learn']),
     L('08', 'I like …', "aɪ 'laɪk", 'Mir gefällt …; Ich mag …', ['Mir gefällt …', 'Ich mag …'], 'I like my friends.', 'p'),
     L('09', 'word', 'wɜ:d', 'Wort', ['Wort'], 'Look at the new words.', 'w'),
@@ -492,8 +511,6 @@ var TIERE = (function () {
     L('12', 'It sounds …', "ɪt 'saʊndz", 'Es klingt …', ['Es klingt …'], "I like the word 'hola' in Spanish. It sounds cool.", 'p', ['it sounds']),
     L('13', 'great', 'greɪt', 'großartig; toll; super', ['großartig', 'toll', 'super'], 'French is great too.', 'w'),
     L('14', 'song', 'sɒŋ', 'Song; Lied', ['Song', 'Lied'], '', 'w'),
-    L('15', 'Sing …', 'sɪŋ', 'Singe/Singt …', ['Singe/Singt …', 'Singe', 'Singt'], '', 'p', ['sing', 'to sing']),
-    L('16', 'Add …', 'æd', 'Füge/Fügt … hinzu.', ['Füge/Fügt … hinzu.', 'Füge … hinzu', 'Fügt … hinzu'], '', 'p', ['add']),
     L('17', 'all', 'ɔ:l', 'alle', ['alle'], '', 'w')
   ];
 
@@ -823,8 +840,8 @@ var TIERE = (function () {
     return out;
   }
 
-  function buildQueue(force) {
-    var P = prog(), now = Date.now(), words = selectedWords(), due = [], fresh = [], rnd = {};
+  function buildQueue(force, mode) {
+    var P = prog(), now = Date.now(), words = selectedWords().filter(function (w) { return canDo(mode, w); }), due = [], fresh = [], rnd = {};
     words.forEach(function (w) {
       rnd[w.id] = Math.random();
       var c = P.cards[w.id];
@@ -855,6 +872,66 @@ var TIERE = (function () {
       used[norm(t)] = 1; opts.push({ t: t, ok: false });
     }
     return shuffle(opts);
+  }
+
+
+  /* ---------- Neue Übungsarten: Lückensatz, Puzzle, Memory ---------- */
+  var GERMAN = /[äöüßÄÖÜ→↔=]|\b(und|der|die|das|ist|sind|man|wird|wenn|Achtung|Vor|Bei|Ohne|Zeichnung|Foto|Mehrzahl)\b/;
+  function coreOf(w) { return String(w.en).replace(/^to\s+/i, '').replace(/\([^)]*\)/g, '').replace(/…|\.\.\./g, '').trim().toLowerCase(); }
+  var gapCache = {};
+  function gapOf(w) {
+    if (gapCache[w.id] !== undefined) return gapCache[w.id];
+    var out = null, core = coreOf(w);
+    if (w.ex && /^[a-z]{3,}( [a-z]+)?$/.test(core) && ['she', 'they', 'you', 'this'].indexOf(core) < 0) {
+      var sents = String(w.ex).split(/(?<=[.!?])\s+/);
+      var re = new RegExp("(^|[^A-Za-z'])(" + core.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "|" + (core.slice(-1) === 'y' ? core.slice(0, -1) + 'ies' : core + '(?:s|es|ed|d|ing)?') + ")(?![A-Za-z'])", 'i');
+      for (var i = 0; i < sents.length && !out; i++) {
+        var t = sents[i].replace(/^[–\-"“\s]+/, '').replace(/["”]+$/, '').trim();
+        if (!t || GERMAN.test(t) || /…/.test(t)) continue;
+        var m = re.exec(t); if (!m) continue;
+        var surf = m[2], start = m.index + m[1].length;
+        var sl = surf.toLowerCase(), suf = sl.indexOf(core) === 0 ? sl.slice(core.length) : (core.slice(-1) === 'y' && /ies$/.test(sl) ? 'ies' : '');
+        out = { pre: t.slice(0, start), post: t.slice(start + surf.length), surf: surf, core: core, full: t, suf: suf };
+        // alle weiteren Vorkommen im Satz ebenfalls ausblenden
+        var rest = out.post, rx = new RegExp("(^|[^A-Za-z'])" + surf.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "(?![A-Za-z'])", 'gi');
+        out.post = rest.replace(rx, function (a, b) { return b + '\u0001'; });
+        out.pre = out.pre.replace(rx, function (a, b) { return b + '\u0001'; });
+      }
+    }
+    gapCache[w.id] = out; return out;
+  }
+  function gapOpts(w, g) {
+    var pool = shuffle(allWords().filter(function (o) { var c = coreOf(o); return o.id !== w.id && c !== g.core && /^[a-z]{3,10}$/.test(c); }));
+    pool.sort(function (a, b) { return ((b.lesson === w.lesson ? 2 : 0) + (b.kind === w.kind ? 1 : 0)) - ((a.lesson === w.lesson ? 2 : 0) + (a.kind === w.kind ? 1 : 0)); });
+    var cap = /^[A-Z]/.test(g.surf);
+    function form(c) {
+      var f = g.suf === 'ies' ? (c.slice(-1) === 'y' ? c.slice(0, -1) + 'ies' : c + 's') : (g.suf === 'ing' && c.slice(-1) === 'e') ? c.slice(0, -1) + 'ing' : c + g.suf;
+      return cap ? f.charAt(0).toUpperCase() + f.slice(1) : f;
+    }
+    var opts = [{ t: g.surf, ok: true }], used = {}; used[g.surf.toLowerCase()] = 1;
+    for (var i = 0; i < pool.length && opts.length < 4; i++) {
+      var t = form(coreOf(pool[i]));
+      if (used[t.toLowerCase()]) continue; used[t.toLowerCase()] = 1; opts.push({ t: t, ok: false });
+    }
+    return shuffle(opts);
+  }
+  function puzzleWord(w) { var t = coreOf(w); return /^[a-z]{3,10}$/.test(t) ? t : null; }
+  function mkTiles(t) {
+    var a = t.split(''), b = shuffle(a.slice()), n = 0;
+    while (b.join('') === t && n++ < 20 && new Set(a).size > 1) b = shuffle(a.slice());
+    return b;
+  }
+  function canDo(mode, w) { return mode === 'gap' ? !!gapOf(w) : mode === 'puzzle' ? !!puzzleWord(w) : true; }
+  function mkItem(mode, w, retry) {
+    var it = { w: w, retry: !!retry, opts: null };
+    if (mode === 'listen') it.opts = makeOpts(w);
+    else if (mode === 'gap') { it.gap = gapOf(w); it.opts = gapOpts(w, it.gap); }
+    else if (mode === 'puzzle') { it.target = puzzleWord(w); it.tiles = mkTiles(it.target); it.placed = []; }
+    return it;
+  }
+  function gapHtml(g, fill) {
+    var b = fill ? '<span class="blank fill">' + esc(g.surf) + '</span>' : '<span class="blank">&nbsp;</span>';
+    return esc(g.pre).replace(/\u0001/g, b) + b + esc(g.post).replace(/\u0001/g, b);
   }
 
   function checkTyped(w, val) {
@@ -921,6 +998,9 @@ var TIERE = (function () {
     cards: svg('<rect x="3" y="7" width="14" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 4h12a2 2 0 0 1 2 2v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>', 26),
     keys: svg('<rect x="2.5" y="6" width="19" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M7.5 14h9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>', 26),
     flame: svg('<path d="M12 2.5c.8 3.6 5.5 5.6 5.5 10.8a5.5 5.5 0 0 1-11 0c0-2.2 1.1-3.6 2.3-4.8.1 1.8.9 2.8 1.9 3.1-.5-3.6.2-6.2 1.3-9.1z" fill="currentColor"/>', 34),
+    gap: svg('<path d="M3 9h5M16 9h5M3 15h18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M10 9h4" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="0.1 5"/>', 26),
+    memory: svg('<rect x="3" y="4" width="8" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13" y="10" width="8" height="10" rx="2" fill="currentColor"/>', 26),
+    puzzle: svg('<rect x="2.5" y="8" width="5" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9.5" y="8" width="5" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="16.5" y="8" width="5" height="8" rx="1.5" fill="currentColor"/>', 26),
     star: '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2 15,9 22,9.5 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9.5 9,9" fill="currentColor"/></svg>',
     check: svg('<path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>', 22),
     cross: svg('<path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>', 22)
@@ -965,6 +1045,7 @@ var TIERE = (function () {
   function vHome() {
     var p = profile(), P = prog(), today = P.days[dayKey(new Date())] || 0, si = streakInfo(), st = si.cur;
     var n = buildQueue(false).length, chs = chapters(), nSel = selectedWords().length;
+    var selW = selectedWords(), nGap = selW.filter(function (w) { return canDo('gap', w); }).length, nPuz = selW.filter(function (w) { return canDo('puzzle', w); }).length, nMem = selW.filter(function (w) { return w.deA[0].length <= 16; }).length >= 6 ? 1 : 0;
     var chapHtml = chs.map(function (c, i) {
       var due = 0;
       allWords().forEach(function (w) { if (w.lesson === c.key) { var cc = P.cards[w.id]; if (!cc || cc.due <= Date.now()) due++; } });
@@ -997,6 +1078,9 @@ var TIERE = (function () {
       '<button class="mode" data-a="start" data-m="cards"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.cards + '</span><span><strong>Karteikarten</strong><span class="d">Umdrehen und selbst prüfen</span></span></button>' +
       '<button class="mode" data-a="start" data-m="type"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.keys + '</span><span><strong>Tippen</strong><span class="d">Deutsch lesen, Englisch schreiben</span></span></button>' +
       '<button class="mode" data-a="start" data-m="listen"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.speaker(26) + '</span><span><strong>Hören</strong><span class="d">Anhören und die Bedeutung wählen</span></span></button>' +
+      '<button class="mode" data-a="start" data-m="gap"' + (nGap ? '' : ' disabled') + '><span class="ic">' + ICON.gap + '</span><span><strong>Lückensatz<span class="newtag">Neu</span></strong><span class="d">' + (nGap ? 'Welches Wort fehlt im Satz?' : 'Für diese Kapitel gibt es keine Sätze') + '</span></span></button>' +
+      '<button class="mode" data-a="start" data-m="puzzle"' + (nPuz ? '' : ' disabled') + '><span class="ic">' + ICON.puzzle + '</span><span><strong>Buchstaben-Puzzle<span class="newtag">Neu</span></strong><span class="d">' + (nPuz ? 'Buchstaben in die richtige Reihenfolge' : 'Für diese Kapitel gibt es keine Puzzle') + '</span></span></button>' +
+      '<button class="mode" data-a="start" data-m="memory"' + (nMem ? '' : ' disabled') + '><span class="ic">' + ICON.memory + '</span><span><strong>Memory<span class="newtag">Neu</span></strong><span class="d">Paare finden · zählt nicht für die Serie</span></span></button>' +
       '<button class="mode" data-a="start-test"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.check + '</span><span><strong>Mini-Test</strong><span class="d">' + Math.min(TEST_SIZE, nSel) + ' Fragen gemischt, ohne Hilfen</span></span></button>' +
       '</div>' +
       '<section class="card"><h3 style="font-size:1.15rem">Dein Kasten</h3><div class="trays">' + trays + '</div>' +
@@ -1008,8 +1092,34 @@ var TIERE = (function () {
   function curMode(s) { return s.test ? s.q[s.i].sub : s.mode; }
   function speakBtn(label) { return '<button class="speak" data-a="speak">' + ICON.speaker(22) + '<span>' + label + '</span></button>'; }
 
+  function optsHtml(s, it) {
+    var done = s.phase === 'result';
+    return it.opts.map(function (o, i) {
+      var cls = '', ic = '';
+      if (done) {
+        if (o.ok) { cls = ' ok'; ic = '<span style="color:var(--good)">' + ICON.check + '</span>'; }
+        else if (s.res.idx === i) { cls = ' no'; ic = '<span style="color:var(--bad)">' + ICON.cross + '</span>'; }
+      }
+      return '<button class="opt' + cls + '" data-a="pick-opt" data-i="' + i + '"' + (done ? ' disabled' : '') + '><span>' + esc(o.t) + '</span>' + ic + '</button>';
+    }).join('');
+  }
+
+  function vMemory() {
+    var s = session, n = Object.keys(s.done).length, pct = Math.round(n / s.pairs * 100);
+    var head = '<div class="shead"><button class="icon-btn" data-a="quit" aria-label="Beenden">' + ICON.back + '</button>' +
+      '<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><span style="width:' + pct + '%"></span></div>' +
+      '<span class="count">' + n + '/' + s.pairs + '</span></div><p class="note">Memory · zählt nicht für Kasten und Serie</p>';
+    var grid = s.cards.map(function (c, i) {
+      var up = s.up.indexOf(i) >= 0, dn = !!s.done[c.k];
+      return '<button class="mc' + (dn ? ' done' : up ? ' up' : '') + '" data-a="mem-tap" data-i="' + i + '"' + (dn || up || s.lock ? ' disabled' : '') + '>' + (dn || up ? esc(c.t) : '?') + '</button>';
+    }).join('');
+    return head + '<div class="stage"><p class="label center">Finde zu jedem englischen Wort die deutsche Bedeutung. Züge: <b>' + s.moves + '</b></p><div class="memgrid">' + grid + '</div></div>';
+  }
+
   function vSession() {
-    var s = session, it = s.q[s.i], w = it.w, pct = Math.round(s.i / s.q.length * 100);
+    var s = session;
+    if (s.memory) return vMemory();
+    var it = s.q[s.i], w = it.w, pct = Math.round(s.i / s.q.length * 100);
     var head = '<div class="shead"><button class="icon-btn" data-a="quit" aria-label="Beenden">' + ICON.back + '</button>' +
       '<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><span style="width:' + pct + '%"></span></div>' +
       '<span class="count">' + (s.i + 1) + '/' + s.q.length + '</span></div>' +
@@ -1045,6 +1155,22 @@ var TIERE = (function () {
         body = '<div class="stage">' + prompt + fb + ipaHtml(w) + speakBtn('Anhören') + '</div>' +
           '<div class="actions"><button class="btn primary" data-a="next">Weiter</button></div>';
       }
+    } else if (mode === 'gap') {
+      var gd = s.phase === 'result', gg = it.gap;
+      body = '<div class="stage"><p class="label center">Welches Wort fehlt?</p><section class="card"><div class="sent">' + gapHtml(gg, gd) + '</div>' +
+        '<p class="hint">Gesucht: <b>' + esc(w.de) + '</b></p>' + (gd ? speakBtn('Satz anhören') : '') + '</section>' +
+        '<div class="opts" role="group" aria-label="Antworten">' + optsHtml(s, it) + '</div></div>';
+    } else if (mode === 'puzzle') {
+      var pd = s.phase === 'result', letters = '';
+      for (var pi = 0; pi < it.target.length; pi++) letters += '<span class="slot' + (it.placed[pi] !== undefined ? ' on' : '') + '">' + (it.placed[pi] !== undefined ? esc(it.tiles[it.placed[pi]]) : '') + '</span>';
+      var tl = it.tiles.map(function (l, ti) { return '<button class="tile" data-a="pz-tap" data-i="' + ti + '"' + (pd || it.placed.indexOf(ti) >= 0 ? ' disabled' : '') + ' aria-label="Buchstabe ' + esc(l) + '">' + esc(l) + '</button>'; }).join('');
+      body = '<div class="stage"><section class="card"><span class="tag">' + kindLabel(w) + '</span><p class="label">Setze das englische Wort zusammen</p>' +
+        '<div class="big' + (w.de.length > 20 ? ' long' : '') + '">' + esc(w.de) + '</div></section>' +
+        '<div class="slots' + (pd ? (s.res.ok ? ' ok' : ' no') : '') + '" aria-label="Dein Wort">' + letters + '</div>' +
+        (pd && !s.res.ok ? '<div class="fb bad" role="status"><strong>' + ICON.cross + 'Das war es noch nicht.</strong><span class="ans">Richtig ist: ' + esc(it.target) + '</span></div>' : '') +
+        (pd && s.res.ok ? '<div class="fb good" role="status"><strong>' + ICON.check + 'Richtig!</strong></div>' : '') +
+        '<div class="tiles" role="group" aria-label="Buchstaben">' + tl + '</div>' +
+        '<div class="actions two"><button class="btn ghost" data-a="pz-undo"' + (pd || !it.placed.length ? ' disabled' : '') + '>Zurück</button>' + '<button class="btn ghost" data-a="speak">Anhören</button></div></div>';
     } else {
       var done = s.phase === 'result';
       var opts = it.opts.map(function (o, i) {
@@ -1078,7 +1204,18 @@ var TIERE = (function () {
       '<div class="actions"><button class="btn primary" data-a="start-test">Neuer Mini-Test</button><button class="btn ghost" data-a="quit">Fertig</button></div>';
   }
 
+  function vMemResult() {
+    var s = session, P = prog(), stars = s.moves <= s.pairs + 3 ? 3 : s.moves <= s.pairs * 2 + 1 ? 2 : 1;
+    var sv = ''; for (var i = 1; i <= 3; i++) sv += '<span class="' + (i <= stars ? 'on' : '') + '">' + ICON.star + '</span>';
+    var petBit = P.pet ? '<div class="pet">' + petArt(110, stars >= 2 ? 'jubel' : 'ruhig') + '</div>' : '';
+    return '<div class="stage"><section class="card result">' + petBit + '<div class="stars" aria-hidden="true">' + sv + '</div>' +
+      '<h2 style="font-size:1.9rem">Alle Paare gefunden!</h2><p><b>' + s.moves + ' Züge</b> für ' + s.pairs + ' Paare.</p>' +
+      '<p class="muted small">Memory zählt nicht für Kasten und Serie.</p></section></div>' +
+      '<div class="actions"><button class="btn primary" data-a="start" data-m="memory">Noch eine Runde</button><button class="btn ghost" data-a="quit">Fertig</button></div>';
+  }
+
   function vResult() {
+    if (session && session.memory) return vMemResult();
     if (session && session.test) return vTestResult();
     var s = session, p = profile(), P = prog(), today = P.days[dayKey(new Date())] || 0;
     var ratio = s.total ? s.right / s.total : 0;
@@ -1166,13 +1303,32 @@ var TIERE = (function () {
 
   /* ---------- Ablauf ---------- */
   function startSession(mode) {
-    var q = buildQueue(false), practice = false;
-    if (!q.length) { q = buildQueue(true); practice = true; }
+    if (mode === 'memory') return startMemory();
+    var q = buildQueue(false, mode), practice = false;
+    if (!q.length) { q = buildQueue(true, mode); practice = true; }
+    if (!q.length) return;
     session = {
       mode: mode, practice: practice, i: 0, right: 0, total: 0,
-      q: q.map(function (w) { return { w: w, retry: false, opts: mode === 'listen' ? makeOpts(w) : null }; }),
+      q: q.map(function (w) { return mkItem(mode, w, false); }),
       phase: mode === 'cards' ? 'front' : 'ask', res: null, auto: true
     };
+    view = 'session'; render();
+  }
+
+  /* Memory: spielerisch, zählt wie der Mini-Test nicht für Kasten und Serie (Raten ist kein Beweis für Wissen) */
+  function startMemory() {
+    var pool = shuffle(selectedWords().filter(function (w) { return w.deA[0].length <= 16 && coreOf(w).length <= 16; })), seenDe = {}, pick = [];
+    var P = prog(), now = Date.now();
+    pool.sort(function (a, b) { var da = P.cards[a.id] && P.cards[a.id].due <= now ? 0 : 1, db = P.cards[b.id] && P.cards[b.id].due <= now ? 0 : 1; return da - db; });
+    for (var i = 0; i < pool.length && pick.length < 6; i++) {
+      var de = norm(pool[i].deA[0]), en = norm(coreOf(pool[i]));
+      if (seenDe[de] || seenDe[en]) continue;
+      seenDe[de] = 1; seenDe[en] = 1; pick.push(pool[i]);
+    }
+    if (pick.length < 3) return;
+    var cards = [];
+    pick.forEach(function (w) { cards.push({ k: w.id, side: 'en', t: w.en.replace(/^to\s+/i, 'to ').replace(/\(.*?\)/g, '').replace(/…/g, '').trim(), w: w }); cards.push({ k: w.id, side: 'de', t: w.deA[0].replace(/…/g, '').trim(), w: w }); });
+    session = { mode: 'memory', practice: true, memory: true, cards: shuffle(cards), up: [], done: {}, moves: 0, pairs: pick.length, i: 0, q: [], right: 0, total: 0, lock: false };
     view = 'session'; render();
   }
 
@@ -1203,7 +1359,7 @@ var TIERE = (function () {
       var k = dayKey(new Date()); P.days[k] = (P.days[k] || 0) + 1;
       save(['prog-' + pid]);
     }
-    if (!ok) s.q.push({ w: it.w, retry: true, opts: s.mode === 'listen' ? makeOpts(it.w) : null });
+    if (!ok) s.q.push(mkItem(s.mode, it.w, true));
   }
 
   function nextItem() {
@@ -1237,7 +1393,40 @@ var TIERE = (function () {
       DB.settings.off = allOn ? chs.map(function (c) { return c.key; }) : [];
       save(['config']); keepScroll();
     },
-    speak: function () { var s = session; if (s) speak(spoken(s.q[s.i].w)); },
+    speak: function () { var s = session; if (s && s.q[s.i]) { var it = s.q[s.i]; speak(it.gap && s.phase === 'result' ? it.gap.full : spoken(it.w)); } },
+    'pz-tap': function (d) {
+      var s = session, it = s.q[s.i], i = +d.i;
+      if (s.phase !== 'ask' || it.placed.indexOf(i) >= 0) return;
+      it.placed.push(i);
+      if (it.placed.length < it.target.length) { keepScroll(); return; }
+      var got = it.placed.map(function (k) { return it.tiles[k]; }).join(''), ok = got === it.target, at = s.i;
+      s.res = { ok: ok, given: got }; s.phase = 'result'; record(ok); render();
+      clearTimeout(s.timer);
+      s.timer = setTimeout(function () { if (view === 'session' && session === s && s.phase === 'result' && s.i === at) nextItem(); }, ok ? 1100 : 2600);
+    },
+    'pz-undo': function () { var s = session, it = s.q[s.i]; if (s.phase === 'ask' && it.placed.length) { it.placed.pop(); keepScroll(); } },
+    'mem-tap': function (d) {
+      var s = session, i = +d.i;
+      if (!s.memory || s.lock || s.up.indexOf(i) >= 0 || s.done[s.cards[i].k]) return;
+      var c = s.cards[i]; s.up.push(i);
+      if (c.side === 'en') speak(spoken(c.w));
+      if (s.up.length < 2) { keepScroll(); return; }
+      s.moves++;
+      var a = s.cards[s.up[0]], b = s.cards[s.up[1]];
+      if (a.k === b.k) {
+        s.done[a.k] = 1; s.up = []; sfx('ok');
+        if (Object.keys(s.done).length >= s.pairs) {
+          var stars = s.moves <= s.pairs + 3 ? 3 : s.moves <= s.pairs * 2 + 1 ? 2 : 1;
+          s.total = 10; s.right = stars === 3 ? 10 : stars === 2 ? 8 : 5; /* nur für den Ton am Ende */
+          view = 'result'; render(); return;
+        }
+        keepScroll();
+      } else {
+        s.lock = true; keepScroll();
+        clearTimeout(s.timer);
+        s.timer = setTimeout(function () { if (session === s && view === 'session') { s.up = []; s.lock = false; keepScroll(); } }, 1000);
+      }
+    },
     flip: function () { session.phase = 'back'; render(); },
     know: function () { record(true); nextItem(); },
     again: function () { record(false); nextItem(); },
