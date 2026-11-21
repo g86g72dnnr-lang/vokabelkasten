@@ -269,6 +269,16 @@ Eingebettete Schriften (alle unter der SIL Open Font License 1.1, Volltext: schr
   .ok-msg { color: var(--good); font-weight: 500; }
 
 
+  /* Hauptknopf und eingeklappte Kapitel */
+  .btn.cta { min-height: 84px; flex-direction: column; gap: 2px; font-size: 1.5rem; }
+  .btn.cta small { font-size: .9rem; font-weight: 400; opacity: .92; }
+  h3.sub { font-size: 1.15rem; margin-top: 4px; }
+  .chapbox summary { list-style: none; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; }
+  .chapbox summary::-webkit-details-marker { display: none; }
+  .chapbox .chev { width: 12px; height: 12px; border-right: 3px solid var(--muted); border-bottom: 3px solid var(--muted); transform: rotate(45deg); margin-right: 4px; transition: transform .2s; flex: none; }
+  .chapbox[open] .chev { transform: rotate(-135deg); }
+  .chapbox { gap: 6px; padding-block: 4px; }
+
   /* Schalter Einfach / Heft */
   .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .segb { min-height: 52px; border: 2px solid var(--line); border-radius: 14px; background: var(--surface); font-weight: 600; }
@@ -294,6 +304,7 @@ Eingebettete Schriften (alle unter der SIL Open Font License 1.1, Volltext: schr
   html:root[data-style="heft"] .card { background: transparent; border: none; border-radius: 0; padding: 0; }
   html:root[data-style="heft"] .lvl { border: 2px solid var(--ink); border-radius: 6px; background: var(--tip); padding: 16px; }
   html:root[data-style="heft"] .tag, html:root[data-style="heft"] .newtag { border-radius: 3px; }
+  html:root[data-style="heft"] .chapbox { border: 2px solid var(--ink); border-radius: 6px; background: var(--surface); padding: 4px 14px; }
   html:root[data-style="heft"] .ex, html:root[data-style="heft"] .note { border-radius: 4px; }
 
   html:root[data-style="heft"] .btn { border: 2px solid var(--ink); border-radius: 6px; font-weight: 700; }
@@ -1019,7 +1030,7 @@ var TIERE = (function () {
   }
   function canDo(mode, w) { return mode === 'gap' ? !!gapOf(w) : mode === 'puzzle' ? !!puzzleWord(w) : true; }
   function mkItem(mode, w, retry) {
-    var it = { w: w, retry: !!retry, opts: null };
+    var it = { w: w, retry: !!retry, opts: null, sub: mode };
     if (mode === 'listen') it.opts = makeOpts(w);
     else if (mode === 'gap') { it.gap = gapOf(w); it.opts = gapOpts(w, it.gap); }
     else if (mode === 'puzzle') { it.target = puzzleWord(w); it.tiles = mkTiles(it.target); it.placed = []; }
@@ -1117,7 +1128,7 @@ var TIERE = (function () {
   };
 
   /* ---------- Zustand ---------- */
-  var openChap = {}, petSel = null, view = 'profiles', pid = null, session = null, msg = '', resetFor = null;
+  var openChap = {}, chapOpen = false, petSel = null, view = 'profiles', pid = null, session = null, msg = '', resetFor = null;
 
   /* ---------- Ansichten ---------- */
   function vProfiles() {
@@ -1163,8 +1174,11 @@ var TIERE = (function () {
         '<span class="muted small"> · ' + c.n + ' Wörter' + (due ? ', ' + due + ' offen' : '') + '</span></span></label>';
     }).join('');
     var allOn = chs.every(function (c) { return chapOn(c.key); });
-    var chapSec = '<section class="card"><h3 style="font-size:1.15rem">Was üben?</h3><div class="chaps">' + chapHtml + '</div>' +
-      '<button class="btn link" data-a="chap-all">' + (allOn ? 'Alle abwählen' : 'Alle auswählen') + '</button></section>';
+    var nOn = chs.filter(function (c) { return chapOn(c.key); }).length;
+    var chapInfo = allOn ? 'Alle ' + chs.length + ' Kapitel' : nOn === 0 ? 'Noch keins gewählt' : nOn + ' von ' + chs.length + ' Kapiteln';
+    var chapSec = '<details class="card chapbox" id="chapBox" data-box="1"' + (chapOpen || nSel === 0 ? ' open' : '') + '><summary><span><b>Was üben?</b> <span class="muted small">' + chapInfo + '</span></span><span class="chev" aria-hidden="true"></span></summary>' +
+      '<div class="chaps">' + chapHtml + '</div>' +
+      '<button class="btn link" data-a="chap-all">' + (allOn ? 'Alle abwählen' : 'Alle auswählen') + '</button></details>';
     var counts = [0, 0, 0, 0, 0, 0];
     allWords().forEach(function (w) { var c = P.cards[w.id]; counts[c ? c.box : 0]++; });  /* Kasten zählt über alle Kapitel */
     var trays = counts.map(function (c, i) {
@@ -1172,18 +1186,18 @@ var TIERE = (function () {
       return '<div class="tray' + (i === 0 ? ' new' : '') + '"><div class="well" style="height:' + h + 'px">' + c + '</div>' +
         '<span class="tl">' + (i === 0 ? 'Neu' : 'Fach ' + i) + '</span><span class="ti">' + BOX_INFO[i] + '</span></div>';
     }).join('');
-    var todo = nSel === 0
-      ? '<p class="note">Bitte wähle oben mindestens ein Kapitel aus.</p>'
-      : n > 0
-      ? '<p><b>' + n + (n === 1 ? ' Wort wartet' : ' Wörter warten') + '</b> heute auf dich.</p>'
-      : '<p class="note">Für heute ist alles geschafft. Du kannst trotzdem üben, das zählt dann aber nicht für die Serie.</p>';
+    var cta = nSel === 0
+      ? '<p class="note">Wähle unten bei „Was üben?“ mindestens ein Kapitel aus.</p>'
+      : '<button class="btn primary cta" data-a="start" data-m="mix"><span>' + (n > 0 ? 'Heute üben' : 'Noch eine Runde') + '</span><small>' +
+        (n > 0 ? Math.min(n, SESSION_SIZE) + ' Wörter, gemischte Aufgaben' : 'Alles geschafft! Zählt nicht für die Serie.') + '</small></button>';
     var pct = Math.min(100, Math.round(today / GOAL * 100));
     return '<div class="top"><h1 style="font-size:1.9rem">Hallo, ' + esc(p.name) + '!</h1>' +
       '<div class="topbtns"><button class="icon-btn" data-a="snd" aria-pressed="' + soundOn() + '" aria-label="' + (soundOn() ? 'Ton ausschalten' : 'Ton einschalten') + '">' + ICON.speaker(22) + (soundOn() ? '' : '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" style="position:absolute"><path d="M4 4l16 16" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>') + '</button>' +
       '</div></div>' +
-      (levelUpPending() ? levelUpHtml() : '') + heroHtml(si) + (prog().pet ? growHtml() : '') +
+      cta + (levelUpPending() ? levelUpHtml() : '') + heroHtml(si) + (prog().pet ? growHtml() : '') +
       '<div class="card stats"><div class="goal"><p>Heute: <b>' + Math.min(today, GOAL) + ' von ' + GOAL + '</b> Wörtern</p><div class="meter"><span style="width:' + pct + '%"></span></div></div></div>' +
-      chapSec + todo +
+      chapSec +
+      '<h3 class="sub">Lieber etwas anderes?</h3>' +
       '<div class="modes">' +
       '<button class="mode" data-a="start" data-m="cards"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.cards + '</span><span><strong>Karteikarten</strong><span class="d">Umdrehen und selbst prüfen</span></span></button>' +
       '<button class="mode" data-a="start" data-m="type"' + (nSel ? '' : ' disabled') + '><span class="ic">' + ICON.keys + '</span><span><strong>Tippen</strong><span class="d">Deutsch lesen, Englisch schreiben</span></span></button>' +
@@ -1199,7 +1213,7 @@ var TIERE = (function () {
   }
 
   function ipaHtml(w) { return (DB.settings.ipa && w.ipa && !(session && session.test)) ? '<div class="ipa">[' + esc(w.ipa) + ']</div>' : ''; }
-  function curMode(s) { return s.test ? s.q[s.i].sub : s.mode; }
+  function curMode(s) { return (s.test || s.mix) ? s.q[s.i].sub : s.mode; }
   function speakBtn(label) { return '<button class="speak" data-a="speak">' + ICON.speaker(22) + '<span>' + label + '</span></button>'; }
 
   function optsHtml(s, it) {
@@ -1415,6 +1429,7 @@ var TIERE = (function () {
   /* ---------- Ablauf ---------- */
   function startSession(mode) {
     if (mode === 'memory') return startMemory();
+    if (mode === 'mix') return startMix();
     var q = buildQueue(false, mode), practice = false;
     if (!q.length) { q = buildQueue(true, mode); practice = true; }
     if (!q.length) return;
@@ -1423,6 +1438,27 @@ var TIERE = (function () {
       q: q.map(function (w) { return mkItem(mode, w, false); }),
       phase: mode === 'cards' ? 'front' : 'ask', res: null, auto: true
     };
+    view = 'session'; render();
+  }
+
+  /* Gemischte Tagesrunde: pro Wort eine passende Übungsart. Neue und unsichere Wörter (Fach 0-1) werden gezeigt, erkannt oder zusammengesetzt, sichere Wörter auch selbst geschrieben. Zählt für Serie und Fächer wie jede normale Runde. */
+  function pickMix(w, prev, used) {
+    var c = prog().cards[w.id], box = c ? c.box : 0;
+    var order = box <= 1 ? ['cards', 'listen', 'gap', 'puzzle'] : ['gap', 'type', 'puzzle', 'listen'];
+    var av = order.filter(function (m) { return canDo(m, w); });
+    if (!av.length) av = ['listen'];
+    var pool = av.filter(function (m) { return m !== prev; });
+    if (!pool.length) pool = av;
+    var least = Math.min.apply(null, pool.map(function (m) { return used[m] || 0; }));
+    pool = pool.filter(function (m) { return (used[m] || 0) === least; });   /* seltener genutzte Aufgabenart zuerst, damit es abwechslungsreich bleibt */
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function startMix() {
+    var q = buildQueue(false, 'mix'), practice = false;
+    if (!q.length) { q = buildQueue(true, 'mix'); practice = true; }
+    if (!q.length) return;
+    var prev = null, used = {}, items = shuffle(q.slice()).map(function (w) { var m = pickMix(w, prev, used); prev = m; used[m] = (used[m] || 0) + 1; return mkItem(m, w, false); });
+    session = { mode: 'mix', mix: true, practice: practice, i: 0, right: 0, total: 0, q: items, phase: items[0].sub === 'cards' ? 'front' : 'ask', res: null, auto: true };
     view = 'session'; render();
   }
 
@@ -1470,7 +1506,7 @@ var TIERE = (function () {
       var k = dayKey(new Date()); P.days[k] = (P.days[k] || 0) + 1;
       save(['prog-' + pid]);
     }
-    if (!ok) s.q.push(mkItem(s.mode, it.w, true));
+    if (!ok) s.q.push(mkItem(s.mix ? it.sub : s.mode, it.w, true));
   }
 
   function nextItem() {
@@ -1578,7 +1614,7 @@ var TIERE = (function () {
     var t = e.target.closest('[data-a]'); if (!t || t.disabled) return;
     var f = act[t.dataset.a]; if (f) f(t.dataset);
   });
-  document.addEventListener('toggle', function (e) { var t = e.target; if (t && t.dataset && t.dataset.ch !== undefined) openChap[t.dataset.ch] = t.open; }, true);
+  document.addEventListener('toggle', function (e) { var t = e.target; if (t && t.dataset && t.dataset.box !== undefined) chapOpen = t.open; if (t && t.dataset && t.dataset.ch !== undefined) openChap[t.dataset.ch] = t.open; }, true);
   document.addEventListener('submit', function (e) {
     e.preventDefault();
     if (e.target.id === 'typeForm') act.check();
